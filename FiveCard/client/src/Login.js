@@ -19,7 +19,7 @@ function Login() {
 
     const data = await response.json();
     if (data.success) {
-      navigate('/game'); // 로그인 성공 시 게임 페이지로 이동
+      navigate('/Game'); // 로그인 성공 시 게임 페이지로 이동
     } else {
       alert('Invalid credentials');
     }
