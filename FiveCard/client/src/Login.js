@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from './AuthContext';
 
 function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -19,7 +21,8 @@ function Login() {
 
     const data = await response.json();
     if (data.success) {
-      navigate('/Game'); // 로그인 성공 시 게임 페이지로 이동
+      login();
+      navigate('/game'); // 로그인 성공 시 게임 페이지로 이동
     } else {
       alert('Invalid credentials');
     }
