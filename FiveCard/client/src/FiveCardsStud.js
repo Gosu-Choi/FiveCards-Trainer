@@ -1,17 +1,21 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import { useAuth } from './AuthContext';
 import { shuffle } from './utils'; // 섞기 함수 임포트
-import './Game.css'; // 스타일을 위한 CSS 파일 임포트
+import './FiveCardsStud.css'; // 스타일을 위한 CSS 파일 임포트
 import 'bootstrap/dist/css/bootstrap.min.css'; // 부트스트랩 CSS 임포트
 
-function Game() {
+function FiveCardsStud() {
   const { isAuthenticated } = useAuth();
   const [number, setNumber] = useState(null);
+  const location = useLocation();
   const [shuffledCards, setShuffledCards] = useState([]);
   const [activePlayers, setActivePlayers] = useState([]);
+  const [isOpen, setisOpen] = useState([]);
   const [cardsDrawn, setCardsDrawn] = useState([]);
   const navigate = useNavigate();
+  const [playerCount, setPlayerCount] = useState(null);
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -20,18 +24,14 @@ function Game() {
   }, [isAuthenticated, navigate]);
 
   useEffect(() => {
-    let userNumber;
-    do {
-      userNumber = prompt("Please enter a natural number less than or equal to 6:");
-    } while (
-      userNumber === null || 
-      !/^[1-6]$/.test(userNumber) || 
-      parseInt(userNumber, 10) < 1 || 
-      parseInt(userNumber, 10) > 6
-    );
-    setNumber(parseInt(userNumber, 10));
-    setActivePlayers(new Array(parseInt(userNumber, 10)).fill(true));
-    setCardsDrawn(new Array(parseInt(userNumber, 10)).fill(0));
+    if (location.state) {
+      setNumber(location.state.playerCount);
+    }
+  }, [location.state]);
+
+  useEffect(() => {
+    setActivePlayers(new Array(number).fill(true));
+    setCardsDrawn(new Array(number).fill(0));
   }, []);
 
   useEffect(() => {
@@ -50,6 +50,7 @@ function Game() {
     setShuffledCards(shuffled);
     setActivePlayers(new Array(number).fill(true));
     setCardsDrawn(new Array(number).fill(0));
+    setisOpen(false);
   };
 
   const drawCards = () => {
@@ -62,6 +63,10 @@ function Game() {
       });
     });
   };
+
+  const openCards = () => {
+    setisOpen(true);
+  }
 
   const foldPlayer = (index) => {
     setActivePlayers(prevActivePlayers => {
@@ -121,10 +126,11 @@ function Game() {
         <div className="button-container">
           <button className="btn btn-sm btn-secondary shuffle-button" onClick={shuffleCards}>Shuffle</button>
           <button className="btn btn-sm btn-primary continue-button" onClick={drawCards}>Continue</button>
+          <button className="btn btn-sm btn-primary open-button" onClick={openCards}>Open</button>
         </div>
       </div>
     </div>
   );
 }
 
-export default Game;
+export default FiveCardsStud;

@@ -1,0 +1,21 @@
+.selection-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    gap: 20px;
+  }
+  
+  .question {
+    text-align: center;
+  }
+  
+  .button-group {
+    display: flex;
+    gap: 10px;
+  }
+  
+  .start-button {
+    margin-top: 20px;
+  }
