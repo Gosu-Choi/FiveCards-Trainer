@@ -40,10 +40,10 @@ function Game() {
 
   const shuffleCards = () => {
     const cardFiles = [
-      'diamonds_2.png', 'diamonds_3.png', 'diamonds_4.png', 'diamonds_5.png', 'diamonds_6.png', 'diamonds_7.png', 'diamonds_8.png', 'diamonds_9.png', 'diamonds_10.png', 'diamonds_J.png', 'diamonds_Q.png', 'diamonds_K.png', 'diamonds_A.png',
-      'spades_2.png', 'spades_3.png', 'spades_4.png', 'spades_5.png', 'spades_6.png', 'spades_7.png', 'spades_8.png', 'spades_9.png', 'spades_10.png', 'spades_J.png', 'spades_Q.png', 'spades_K.png', 'spades_A.png',
-      'hearts_2.png', 'hearts_3.png', 'hearts_4.png', 'hearts_5.png', 'hearts_6.png', 'hearts_7.png', 'hearts_8.png', 'hearts_9.png', 'hearts_10.png', 'hearts_J.png', 'hearts_Q.png', 'hearts_K.png', 'hearts_A.png',
-      'clubs_2.png', 'clubs_3.png', 'clubs_4.png', 'clubs_5.png', 'clubs_6.png', 'clubs_7.png', 'clubs_8.png', 'clubs_9.png', 'clubs_10.png', 'clubs_J.png', 'clubs_Q.png', 'clubs_K.png', 'clubs_A.png'
+      'diamonds_2.svg', 'diamonds_3.svg', 'diamonds_4.svg', 'diamonds_5.svg', 'diamonds_6.svg', 'diamonds_7.svg', 'diamonds_8.svg', 'diamonds_9.svg', 'diamonds_10.svg', 'diamonds_J.svg', 'diamonds_Q.svg', 'diamonds_K.svg', 'diamonds_A.svg',
+      'spades_2.svg', 'spades_3.svg', 'spades_4.svg', 'spades_5.svg', 'spades_6.svg', 'spades_7.svg', 'spades_8.svg', 'spades_9.svg', 'spades_10.svg', 'spades_J.svg', 'spades_Q.svg', 'spades_K.svg', 'spades_A.svg',
+      'hearts_2.svg', 'hearts_3.svg', 'hearts_4.svg', 'hearts_5.svg', 'hearts_6.svg', 'hearts_7.svg', 'hearts_8.svg', 'hearts_9.svg', 'hearts_10.svg', 'hearts_J.svg', 'hearts_Q.svg', 'hearts_K.svg', 'hearts_A.svg',
+      'clubs_2.svg', 'clubs_3.svg', 'clubs_4.svg', 'clubs_5.svg', 'clubs_6.svg', 'clubs_7.svg', 'clubs_8.svg', 'clubs_9.svg', 'clubs_10.svg', 'clubs_J.svg', 'clubs_Q.svg', 'clubs_K.svg', 'clubs_A.svg'
     ];
 
     const shuffled = shuffle(cardFiles);
