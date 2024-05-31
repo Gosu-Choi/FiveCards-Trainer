@@ -1,29 +1,32 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from './AuthContext';
 
-function App() {
+function Game() {
+  const { isAuthenticated } = useAuth();
   const [number, setNumber] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    const userNumber = prompt('Please enter a number:');
-    if (userNumber !== null) {
-      setNumber(userNumber);
-      alert('You entered: ' + userNumber);
-    } else {
-      alert('No number entered. Redirecting to another page.');
-      window.location.href = 'https://www.example.com';
+    if (!isAuthenticated) {
+      navigate('/login');
     }
-  }, []);
+  }, [isAuthenticated, navigate]);
 
-  if (number === null) {
-    return null; // 아직 숫자를 입력받지 않았으면 아무것도 렌더링하지 않음
-  }
+  useEffect(() => {
+    let userNumber;
+    do {
+      userNumber = prompt("Please enter a number:");
+    } while (userNumber === null || userNumber.trim() === "");
+    setNumber(userNumber);
+  }, []);
 
   return (
     <div className="container">
-      <h1>Welcome to the Number Input Page</h1>
+      <h1>Welcome to the Game Page</h1>
       <p>Your number is: {number}</p>
     </div>
   );
 }
 
-export default App;
+export default Game;
