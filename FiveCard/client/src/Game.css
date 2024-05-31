@@ -1,0 +1,32 @@
+.game-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    position: relative;
+  }
+  
+  .circle {
+    width: 600px;
+    height: 600px;
+    border: 2px solid gray;
+    border-radius: 50%;
+    position: relative;
+  }
+  
+  .box {
+    width: 50px; /* 박스 크기 조정 */
+    height: 75px; /* 박스 크기 조정 */
+    position: absolute;
+    transform: translate(-50%, -50%);
+  }
+  
+  .card-slot {
+    width: 100%;
+    height: 100%;
+    background-color: white;
+    border: 1px solid black;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
