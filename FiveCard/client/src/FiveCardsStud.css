@@ -50,7 +50,7 @@
   .shuffle-button,
   .continue-button,
   .open-button {
-    width: 100px; /* 버튼 너비를 동일하게 설정 */
+    width: 200px; /* 버튼 너비를 동일하게 설정 */
   }
   
   .fold-button {
@@ -60,3 +60,15 @@
     cursor: pointer;
     z-index: 10; /* 버튼이 카드 위에 오도록 */
   }
+
+  .action-buttons {
+    display: flex;
+    justify-content: space-around;
+    width: 200px; /* 전체 버튼 컨테이너의 너비를 설정 */
+  }
+  
+  .action-button {
+    width: 60px; /* 각각의 버튼 너비를 Shuffle 버튼의 1/3로 설정 */
+    margin: 0 5px; /* 버튼 간의 간격을 조정 */
+  }
+  

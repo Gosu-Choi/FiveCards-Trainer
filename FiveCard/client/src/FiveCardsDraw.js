@@ -18,6 +18,7 @@ function FiveCardsDraw() {
   const [showFifthCard, setShowFifthCard] = useState(false);
   const [deckShuffled, setDeckShuffled] = useState(false);
   const [hands, setHands] = useState([]);
+  const default_player_number = 3;
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -28,6 +29,8 @@ function FiveCardsDraw() {
   useEffect(() => {
     if (location.state) {
       setNumber(location.state.playerCount);
+    } else {
+      setPlayerCount(default_player_number);
     }
   }, [location.state]);
 

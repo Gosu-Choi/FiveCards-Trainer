@@ -24,16 +24,16 @@ function calculateHandRank(hand) {
 
   const counts = Object.values(rankCounts).sort((a, b) => b - a);
 
-  if (isStraight && isFlush) return { rank: 8, highCard: sortedHand }; // 스트레이트 플러시
-  if (counts[0] === 4) return { rank: 7, highCard: sortedHand }; // 포카드
-  if (counts[0] === 3 && counts[1] === 2) return { rank: 6, highCard: sortedHand }; // 풀하우스
-  if (isFlush) return { rank: 5, highCard: sortedHand }; // 플러시
-  if (isStraight) return { rank: 4, highCard: sortedHand }; // 스트레이트
-  if (counts[0] === 3) return { rank: 3, highCard: sortedHand }; // 트리플
-  if (counts[0] === 2 && counts[1] === 2) return { rank: 2, highCard: sortedHand }; // 투페어
-  if (counts[0] === 2) return { rank: 1, highCard: sortedHand }; // 원페어
+  if (isStraight && isFlush) return { rank: 8, highCard: sortedHand, hand: "Straight-Flush!!" }; // 스트레이트 플러시
+  if (counts[0] === 4) return { rank: 7, highCard: sortedHand, hand: "Four-Cards!!" }; // 포카드
+  if (counts[0] === 3 && counts[1] === 2) return { rank: 6, highCard: sortedHand, hand: "Full-House!" }; // 풀하우스
+  if (isFlush) return { rank: 5, highCard: sortedHand, hand: "Flush!" }; // 플러시
+  if (isStraight) return { rank: 4, highCard: sortedHand, hand: "Straight!" }; // 스트레이트
+  if (counts[0] === 3) return { rank: 3, highCard: sortedHand, hand: "Triple" }; // 트리플
+  if (counts[0] === 2 && counts[1] === 2) return { rank: 2, highCard: sortedHand, hand: "Two Pair" }; // 투페어
+  if (counts[0] === 2) return { rank: 1, highCard: sortedHand, hand: "One Pair" }; // 원페어
 
-  return { rank: 0, highCard: sortedHand }; // 높은 카드
+  return { rank: 0, highCard: sortedHand, hand: "Top" }; // 높은 카드
 }
 
 // 두 핸드의 승자를 결정하는 함수
