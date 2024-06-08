@@ -15,6 +15,8 @@ function FiveCardsDraw() {
   const [cardsDrawn, setCardsDrawn] = useState([]);
   const navigate = useNavigate();
   const [playerCount, setPlayerCount] = useState(null);
+  const [showFifthCard, setShowFifthCard] = useState(false);
+  const [deckShuffled, setDeckShuffled] = useState(false);
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -49,6 +51,8 @@ function FiveCardsDraw() {
     setShuffledCards(shuffled);
     setActivePlayers(new Array(number).fill(true));
     setCardsDrawn(new Array(number).fill(0));
+    setShowFifthCard(false);
+    setDeckShuffled(true);
   };
 
   const drawCards = () => {
@@ -70,6 +74,13 @@ function FiveCardsDraw() {
     });
   };
 
+  const handleOpen = () => {
+    const allCardsDrawn = cardsDrawn.some(cards => cards === 5);
+    if (allCardsDrawn) {
+      setShowFifthCard(true);
+    }
+  };
+
   const renderBoxes = () => {
     if (number === null) return null;
 
@@ -83,8 +94,10 @@ function FiveCardsDraw() {
 
       for (let j = 0; j < cardsDrawn[i]; j++) {
         const boxX = x + 5 * (j - 2); // 가로로 배치, -2는 중앙 정렬을 위해
-        const cardFilePath = `/cards/${shuffledCards[i * 5 + j]}`; // 무작위로 섞인 카드 파일 경로
-
+        let cardFilePath = `/cards/${shuffledCards[i * 5 + j]}`; // 무작위로 섞인 카드 파일 경로
+        if (!showFifthCard && i!=0) {
+          cardFilePath = `/cards/Card_back.svg`;
+        }
         boxes.push(
           <div
             key={`${i}-${j}`}
@@ -118,9 +131,27 @@ function FiveCardsDraw() {
       <div className="circle">
         {renderBoxes()}
         <div className="button-container">
-          <button className="btn btn-sm btn-secondary shuffle-button" onClick={shuffleCards}>Shuffle</button>
-          <button className="btn btn-sm btn-primary continue-button" onClick={drawCards}>Continue</button>
-          <button className="btn btn-sm btn-primary open-button" onClick={drawCards}>Open</button>
+          <button
+            className={`btn btn-sm ${deckShuffled ?  'btn-primary' : 'btn-secondary'} shuffle-button`}
+            onClick={shuffleCards}
+            disabled={deckShuffled&&!showFifthCard}
+          >
+            Shuffle
+          </button>
+          <button
+            className={`btn btn-sm ${deckShuffled ? 'btn-primary' : 'btn-secondary'} continue-button`}
+            onClick={drawCards}
+            disabled={!deckShuffled || cardsDrawn.some(cards => cards >= 5)}
+          >
+            Continue
+          </button>
+          <button
+            className={`btn btn-sm ${cardsDrawn.some(cards => cards === 5) ? 'btn-primary' : 'btn-secondary'} open-button`}
+            onClick={handleOpen}
+            disabled={!cardsDrawn.some(cards => cards === 5)||showFifthCard}
+          >
+            Open
+          </button>
         </div>
       </div>
     </div>
