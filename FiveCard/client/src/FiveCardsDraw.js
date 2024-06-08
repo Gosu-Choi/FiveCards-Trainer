@@ -17,6 +17,7 @@ function FiveCardsDraw() {
   const [playerCount, setPlayerCount] = useState(null);
   const [showFifthCard, setShowFifthCard] = useState(false);
   const [deckShuffled, setDeckShuffled] = useState(false);
+  const [hands, setHands] = useState([]);
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -33,6 +34,7 @@ function FiveCardsDraw() {
   useEffect(() => {
     setActivePlayers(new Array(number).fill(true));
     setCardsDrawn(new Array(number).fill(0));
+    setHands(new Array(number).fill([]));
   }, []);
 
   useEffect(() => {
@@ -41,10 +43,10 @@ function FiveCardsDraw() {
 
   const shuffleCards = () => {
     const cardFiles = [
-      'diamonds_2.svg', 'diamonds_3.svg', 'diamonds_4.svg', 'diamonds_5.svg', 'diamonds_6.svg', 'diamonds_7.svg', 'diamonds_8.svg', 'diamonds_9.svg', 'diamonds_10.svg', 'diamonds_J.svg', 'diamonds_Q.svg', 'diamonds_K.svg', 'diamonds_A.svg',
-      'spades_2.svg', 'spades_3.svg', 'spades_4.svg', 'spades_5.svg', 'spades_6.svg', 'spades_7.svg', 'spades_8.svg', 'spades_9.svg', 'spades_10.svg', 'spades_J.svg', 'spades_Q.svg', 'spades_K.svg', 'spades_A.svg',
-      'hearts_2.svg', 'hearts_3.svg', 'hearts_4.svg', 'hearts_5.svg', 'hearts_6.svg', 'hearts_7.svg', 'hearts_8.svg', 'hearts_9.svg', 'hearts_10.svg', 'hearts_J.svg', 'hearts_Q.svg', 'hearts_K.svg', 'hearts_A.svg',
-      'clubs_2.svg', 'clubs_3.svg', 'clubs_4.svg', 'clubs_5.svg', 'clubs_6.svg', 'clubs_7.svg', 'clubs_8.svg', 'clubs_9.svg', 'clubs_10.svg', 'clubs_J.svg', 'clubs_Q.svg', 'clubs_K.svg', 'clubs_A.svg'
+      '2D', '3D', '4D', '5D', '6D', '7D', '8D', '9D', '10D', 'JD', 'QD', 'KD', 'AD',
+      '2C', '3C', '4C', '5C', '6C', '7C', '8C', '9C', '10C', 'JC', 'QC', 'KC', 'AC',
+      '2H', '3H', '4H', '5H', '6H', '7H', '8H', '9H', '10H', 'JH', 'QH', 'KH', 'AH',
+      '2S', '3S', '4S', '5S', '6S', '7S', '8S', '9S', '10S', 'JS', 'QS', 'KS', 'AS'
     ];
 
     const shuffled = shuffle(cardFiles);
@@ -53,12 +55,19 @@ function FiveCardsDraw() {
     setCardsDrawn(new Array(number).fill(0));
     setShowFifthCard(false);
     setDeckShuffled(true);
+    setHands(new Array(number).fill([]));
   };
 
   const drawCards = () => {
     setCardsDrawn(prevCardsDrawn => {
       return prevCardsDrawn.map((cards, index) => {
         if (activePlayers[index] && cards < 5) {
+          const newHand = hands[index].concat(shuffledCards[cards + index * 5]);
+          setHands(prevHands => {
+            const newHands = [...prevHands];
+            newHands[index] = newHand;
+            return newHands;
+          });
           return cards + 1;
         }
         return cards;
@@ -94,7 +103,7 @@ function FiveCardsDraw() {
 
       for (let j = 0; j < cardsDrawn[i]; j++) {
         const boxX = x + 5 * (j - 2); // 가로로 배치, -2는 중앙 정렬을 위해
-        let cardFilePath = `/cards/${shuffledCards[i * 5 + j]}`; // 무작위로 섞인 카드 파일 경로
+        let cardFilePath = `/cards/${shuffledCards[i * 5 + j]}.svg`; // 무작위로 섞인 카드 파일 경로
         if (!showFifthCard && i!=0) {
           cardFilePath = `/cards/Card_back.svg`;
         }
