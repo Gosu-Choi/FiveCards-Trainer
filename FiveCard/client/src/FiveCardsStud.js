@@ -5,6 +5,7 @@ import { shuffle } from './utils'; // 섞기 함수 임포트
 import './FiveCardsStud.css'; // 스타일을 위한 CSS 파일 임포트
 import 'bootstrap/dist/css/bootstrap.min.css'; // 부트스트랩 CSS 임포트
 import { calculateHandRank, determineWinner } from './pokerHands';
+import { aiDecision } from './Bot';
 
 function FiveCardsStud() {
   const { isAuthenticated } = useAuth();
@@ -13,17 +14,20 @@ function FiveCardsStud() {
   const [playerCount, setPlayerCount] = useState(null);
   const [shuffledCards, setShuffledCards] = useState([]);
   const [activePlayers, setActivePlayers] = useState([]);
+  const [playershouldbet, setPlayershouldbet] = useState([]);
   const [cardsDrawn, setCardsDrawn] = useState([]);
   const [showFifthCard, setShowFifthCard] = useState(false);
   const [deckShuffled, setDeckShuffled] = useState(false);
   const [hands, setHands] = useState([]);
   const [pot, setPot] = useState(0); 
-  const [raised, setRaised] = useState(0);
-  const [indicator, setIndicator] = useState(0);
+  const [raised, setRaised] = useState(null);
+  const [indicator, setIndicator] = useState({present_value : null, previous_value : null});
   const default_player_number = 3;
   const [moneys, setMoneys] = useState([]);
   const default_ante = 100;
-  
+  const [is_first_operation, setIs_first_operation] = useState(true);
+  const [is_beginning, setIs_beginning] = useState(false);
+  const [gamestarted, setGamestarted] = useState(false);
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -48,6 +52,44 @@ function FiveCardsStud() {
     }
   }, [playerCount]);
 
+  useEffect(()=> {
+    if (!is_first_operation){
+      if (is_beginning) {
+        for (let i = 0; i < playerCount; i++) {
+          if (moneys[i] < default_ante) { fold(i);} 
+        }
+        for (let i = 0; i < playerCount; i++) {
+          if (activePlayers[i]) { call(i); }
+        }
+        setIs_beginning(false);
+      } else {
+        call(indicator.present_value);
+        setPlayershouldbet(prevPlayershouldbet => {
+          const newPlayershouldbet = [...prevPlayershouldbet];
+          for (let i = 0; i < playerCount; i++){
+            if (activePlayers[i] && i!==indicator.previous_value){
+              newPlayershouldbet[i] = true;
+            }
+          }
+          return newPlayershouldbet;
+        })
+      }
+    }
+  }, [raised]) 
+
+  useEffect(() => {
+    while (activePlayers.some(person => person === true)){
+      drawCards();
+      while (playershouldbet.some(person => person === true)){
+        (indicator.present_value) // 미완성. 여기 포함해 전체적으로 완성도 낮음.
+      }
+    }
+  }, [gamestarted])
+  // raised가 바뀌는 경우는 두 가지. 플레이어의 raise 선언 또는 게임 시작. 
+  // 각각을 is_beginning으로 구분 후 코딩
+  // raise 선언 시 해당 인물은 콜, 폴드하지 않은 모든 다른 사람의 베팅 의무 발생 (playershouldbet)
+
+
   const shuffleCards = () => {
     const cardFiles = [
       '2D', '3D', '4D', '5D', '6D', '7D', '8D', '9D', '10D', 'JD', 'QD', 'KD', 'AD',
@@ -57,23 +99,19 @@ function FiveCardsStud() {
     ];
 
     const shuffled = shuffle(cardFiles);
+    change_indicator(0) // 항상 플레이어가 베팅 보스
+
     setShuffledCards(shuffled);
     setDeckShuffled(true);
     setShowFifthCard(false);
     setCardsDrawn(new Array(playerCount).fill(0));
     setHands(new Array(playerCount).fill([]));
     setActivePlayers(new Array(playerCount).fill(true));
-    setRaised(default_ante);
+    setIs_beginning(true);
     setPot(0);
-    
-    for (let i = 0; i < playerCount; i++) {
-        if (moneys[i] < default_ante) { fold(i);} 
-    }
-
-    for (let i = 0; i < playerCount; i++) {
-        if (activePlayers[i]) { call(i); }
-    }
-    
+    setRaised(default_ante);
+    setIs_first_operation(false);
+    setGamestarted(true);
   };
 
   const fold = (playerIndex) => {
@@ -82,6 +120,12 @@ function FiveCardsStud() {
       newActivePlayers[playerIndex] = false;
       return newActivePlayers;
     });
+    setPlayershouldbet(prevPlayershouldbet => {
+      const newPlayershouldbet = [...prevPlayershouldbet];
+      newPlayershouldbet[playerIndex] = false;
+      return newPlayershouldbet;
+    })
+
   };
 
   const call = (playerIndex) => {
@@ -97,15 +141,46 @@ function FiveCardsStud() {
       newMoneys[playerIndex] = newMoney;
       return newMoneys;
     })
+
+    setPlayershouldbet(prevPlayershouldbet => {
+      const newPlayershouldbet = [...prevPlayershouldbet];
+      newPlayershouldbet[playerIndex] = false;
+      return newPlayershouldbet;
+    })
+
+    inc_indicator();
   };
 
+  const inc_indicator = () => {
+    setIndicator(prevIndicator => {
+      let newIndicator = prevIndicator.present_value + 1;
+      while (!activePlayers[newIndicator]) {
+        newIndicator++;
+        if (newIndicator > playerCount) {
+          newIndicator = 0;
+        }
+      }
+      return {
+        ...prevIndicator,
+        present_value: newIndicator,
+        previous_value: prevIndicator.present_value
+      };
+    });
+  }
+
+  const change_indicator = ((ch) => {
+    setIndicator(prevIndicator => {
+      return {...prevIndicator, present_value:ch, previous_value:prevIndicator.present_value}
+    });
+  })
+
   const raise = (playerIndex) => {
+    change_indicator(playerIndex);
     if (moneys[playerIndex] > pot*1.5) {
       setRaised(pot*1.5);
     } else { //All-in
       setRaised(moneys[playerIndex]);
     }
-    call(playerIndex);
   };
 
   const drawCards = () => {
@@ -131,6 +206,8 @@ function FiveCardsStud() {
     if (allCardsDrawn) {
       setShowFifthCard(true);
     }
+    setRaised(0);
+    setGamestarted(false);
   };
 
   const renderBoxes = () => {
@@ -221,18 +298,21 @@ function FiveCardsStud() {
             <button
               className="btn btn-sm btn-warning action-button"
               onClick={() => call(0)} // 플레이어가 콜
+              // disabled={} // 예정 표시
             >
               Call
             </button>
             <button
               className="btn btn-sm btn-danger action-button"
               onClick={() => raise(0)} // 플레이어가 레이즈
+              // disabled={} // 예정 표시
             >
               Raise
             </button>
             <button
               className="btn btn-sm btn-secondary action-button"
               onClick={() => fold(0)} // 플레이어가 폴드
+              // disabled={} // 예정 표시
             >
               Fold
             </button>
