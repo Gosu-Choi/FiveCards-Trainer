@@ -1,5 +1,5 @@
-function aiDecision() {
-    const actions = ['fold', 'call', 'raise'];
+const aiDecision = async() => {
+    const actions = ['fold', 'call'];
     const decision = actions[Math.floor(Math.random() * actions.length)];
     return { decision };
   }
