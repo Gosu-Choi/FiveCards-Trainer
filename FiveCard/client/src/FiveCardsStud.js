@@ -28,6 +28,7 @@ function FiveCardsStud() {
   const [is_first_operation, setIs_first_operation] = useState(true);
   const [is_beginning, setIs_beginning] = useState(false);
   const [gamestarted, setGamestarted] = useState(false);
+  const [playerturn, setPlayerturn] = useState(false);
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -76,18 +77,49 @@ function FiveCardsStud() {
       }
     }
   }, [raised]) 
-
-  useEffect(() => {
-    while (activePlayers.some(person => person === true)){
-      drawCards();
-      while (playershouldbet.some(person => person === true)){
-        (indicator.present_value) // 미완성. 여기 포함해 전체적으로 완성도 낮음.
-      }
-    }
-  }, [gamestarted])
   // raised가 바뀌는 경우는 두 가지. 플레이어의 raise 선언 또는 게임 시작. 
   // 각각을 is_beginning으로 구분 후 코딩
   // raise 선언 시 해당 인물은 콜, 폴드하지 않은 모든 다른 사람의 베팅 의무 발생 (playershouldbet)
+
+  useEffect(() => {
+    if (gamestarted) {
+      const gameLoop = async () => {
+        while (activePlayers.filter(person => person === true).length > 1) {
+          await drawCards(); // 카드를 드로우하고 나서
+          await handleBettingRound(); // 베팅 라운드를 처리함
+        }
+      };
+      gameLoop();
+    }
+  }, [gamestarted]);
+
+  const handleBettingRound = async () => {
+    while (!playershouldbet.some(person => person === true)){
+      console.log(indicator.present_value);
+      if (indicator.present_value !== 0) {
+        const decision = aiDecision();
+        if (decision === 'call') {
+          await call(indicator.present_value);
+        } else if (decision === 'fold') {
+          await fold(indicator.present_value);
+        } else {
+          await raise(indicator.present_value);
+        }
+      } else {
+        setPlayerturn(true);
+        await new Promise(resolve => {
+          const interval = setInterval(() => {
+            if (!playerturn) {
+              clearInterval(interval);
+              resolve();
+            }
+          }, 1000);
+        });
+      }
+      inc_indicator();
+    }
+  };
+
 
 
   const shuffleCards = () => {
@@ -114,7 +146,7 @@ function FiveCardsStud() {
     setGamestarted(true);
   };
 
-  const fold = (playerIndex) => {
+  const fold = async (playerIndex) => {
     setActivePlayers(prevActivePlayers => {
       const newActivePlayers = [...prevActivePlayers];
       newActivePlayers[playerIndex] = false;
@@ -125,10 +157,9 @@ function FiveCardsStud() {
       newPlayershouldbet[playerIndex] = false;
       return newPlayershouldbet;
     })
-
   };
 
-  const call = (playerIndex) => {
+  const call = async (playerIndex) => {
     if (moneys[playerIndex] > raised) {
       setPot(prevPot => prevPot + raised); 
     } else { //All-in
@@ -154,10 +185,19 @@ function FiveCardsStud() {
   const inc_indicator = () => {
     setIndicator(prevIndicator => {
       let newIndicator = prevIndicator.present_value + 1;
+      let round = 0;
       while (!activePlayers[newIndicator]) {
         newIndicator++;
         if (newIndicator > playerCount) {
           newIndicator = 0;
+          round++;
+        }
+        if (round > 1){ // game over
+          return {
+            ...prevIndicator,
+            present_value: null,
+            previous_value: prevIndicator.present_value
+          };
         }
       }
       return {
@@ -174,7 +214,7 @@ function FiveCardsStud() {
     });
   })
 
-  const raise = (playerIndex) => {
+  const raise = async(playerIndex) => {
     change_indicator(playerIndex);
     if (moneys[playerIndex] > pot*1.5) {
       setRaised(pot*1.5);
@@ -183,7 +223,7 @@ function FiveCardsStud() {
     }
   };
 
-  const drawCards = () => {
+  const drawCards = async() => {
     setCardsDrawn(prevCardsDrawn => {
       return prevCardsDrawn.map((cards, index) => {
         if (activePlayers[index] && cards < 5) {
