@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from './AuthContext';
 import { shuffle } from './utils'; // 섞기 함수 임포트
@@ -8,10 +8,11 @@ import { calculateHandRank, determineWinner } from './pokerHands';
 import { aiDecision } from './Bot';
 
 function FiveCardsStud() {
+  const default_player_number = 3;
   const { isAuthenticated } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
-  const [playerCount, setPlayerCount] = useState(null);
+  const [playerCount, setPlayerCount] = useState(default_player_number);
   const [shuffledCards, setShuffledCards] = useState([]);
   const [activePlayers, setActivePlayers] = useState([]);
   const [playershouldbet, setPlayershouldbet] = useState([]);
@@ -21,14 +22,36 @@ function FiveCardsStud() {
   const [hands, setHands] = useState([]);
   const [pot, setPot] = useState(0); 
   const [raised, setRaised] = useState(null);
-  const [indicator, setIndicator] = useState({present_value : null, previous_value : null});
-  const default_player_number = 3;
+  const [indicator, setIndicator] = useState(null);
   const [moneys, setMoneys] = useState([]);
   const default_ante = 100;
   const [is_first_operation, setIs_first_operation] = useState(true);
   const [is_beginning, setIs_beginning] = useState(false);
   const [gamestarted, setGamestarted] = useState(false);
   const [resolveFunction, setResolveFunction] = useState(null);
+
+  const indicatorRef = useRef(indicator);
+  const playershouldbetRef = useRef(playershouldbet);
+  const moneysRef = useRef(moneys);
+  moneysRef.current = moneys;
+  const activePlayersRef = useRef(activePlayers);
+  const gamestartedRef = useRef(gamestarted);
+
+  useEffect(() => {
+    indicatorRef.current = indicator;
+  }, [indicator]);
+
+  useEffect(() => {
+    activePlayersRef.current = activePlayers;
+  }, [activePlayers]);
+
+  useEffect(() => {
+    playershouldbetRef.current = playershouldbet;
+  }, [playershouldbet]);
+
+  useEffect(() => {
+    moneysRef.current = moneys;
+  }, [moneys]);
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -39,14 +62,13 @@ function FiveCardsStud() {
   useEffect(() => {
     if (location.state) {
       setPlayerCount(location.state.playerCount);
-    } else {
-      setPlayerCount(default_player_number);
     }
   }, [location.state]);
 
   useEffect(() => {
     if (playerCount) {
       setActivePlayers(new Array(playerCount).fill(true));
+      setPlayershouldbet(new Array(playerCount).fill(true));
       setCardsDrawn(new Array(playerCount).fill(0));
       setHands(new Array(playerCount).fill([]));
       setMoneys(new Array(playerCount).fill(10000));
@@ -56,24 +78,28 @@ function FiveCardsStud() {
   useEffect(()=> {
     if (!is_first_operation){
       if (is_beginning) {
-        for (let i = 0; i < playerCount; i++) {
-          if (moneys[i] < default_ante) { fold(i);} 
-        }
-        for (let i = 0; i < playerCount; i++) {
-          if (activePlayers[i]) { call(i); }
-        }
-        setIs_beginning(false);
-      } else {
-        call(indicator.present_value);
-        setPlayershouldbet(prevPlayershouldbet => {
-          const newPlayershouldbet = [...prevPlayershouldbet];
-          for (let i = 0; i < playerCount; i++){
-            if (activePlayers[i] && i!==indicator.previous_value){
-              newPlayershouldbet[i] = true;
+        const beginning_func = async() => {
+          console.log("playershouldbet: ", playershouldbetRef.current);
+          console.log("indicator: ", indicatorRef.current);
+          while (playershouldbetRef.current.some(person => person === true)){
+            if (moneys[indicatorRef.current] < default_ante){
+              await fold(indicatorRef.current);
+            } else {
+              await call(indicatorRef.current);
+              console.log("playershouldbet: ", playershouldbetRef.current);
+              console.log("indicator: ", indicatorRef.current);
             }
           }
-          return newPlayershouldbet;
-        })
+          setIs_beginning(false);
+          setGamestarted(true);
+        }
+        beginning_func();
+      } else {
+        const betduty = async() => {
+          await setPlayershouldbetfunc(0);
+          call(indicatorRef.current);
+        }
+        betduty();
       }
     }
   }, [raised]) 
@@ -82,27 +108,59 @@ function FiveCardsStud() {
   // raise 선언 시 해당 인물은 콜, 폴드하지 않은 모든 다른 사람의 베팅 의무 발생 (playershouldbet)
 
   useEffect(() => {
-    if (gamestarted) {
+    gamestartedRef.current = gamestarted;
+    if (gamestartedRef.current) {
       const gameLoop = async () => {
-        while (activePlayers.filter(person => person === true).length > 1) {
-          await drawCards(); // 카드를 드로우하고 나서
-          await handleBettingRound(); // 베팅 라운드를 처리함
+        while (activePlayersRef.current.filter(person => person === true).length > 1) {
+          console.log(moneysRef.current);
+          await change_indicator(0); // 탑을 베팅 보스로 설정 필요. 일단 플레이어 베팅 보스
+          await setPlayershouldbetfunc(1);
+          await drawCards();
+          await handleBettingRound(); 
         }
       };
       gameLoop();
+      setGamestarted(false); // 종료 시 판돈 지급 및 gamestarted 재설정 필요
     }
   }, [gamestarted]);
 
   useEffect(() => {
-    console.log("useEffect triggered");
     if(!is_first_operation && !is_beginning){
-      console.log("useEffect faced something");
-      if (indicator.present_value !== 0 && resolveFunction) {
-        console.log(indicator.present_value);
+      if (indicatorRef.current !== 0 && resolveFunction) {
         resolveFunction();
       }
     } 
-  }, [indicator.present_value]);
+  }, [indicator]);
+
+  const setPlayershouldbetfunc = async(i) => {
+    if (i === 0){
+      const duty0 = async() => {
+        setPlayershouldbet(prevPlayershouldbet => {
+          const newPlayershouldbet = [...prevPlayershouldbet];
+          for (let i = 0; i < playerCount; i++){
+            if (activePlayersRef.current[i] && i!==indicatorRef.current){
+              newPlayershouldbet[i] = true;
+            }
+          }
+          return newPlayershouldbet;
+        });
+      }
+      await duty0();
+    } else {
+      const duty1 = async() => {
+        setPlayershouldbet(prevPlayershouldbet => {
+          const newPlayershouldbet = [...prevPlayershouldbet];
+          for (let i = 0; i < playerCount; i++){
+            if (activePlayersRef.current[i]){
+              newPlayershouldbet[i] = true;
+            }
+          }
+          return newPlayershouldbet;
+        });
+      }
+      await duty1();
+    }
+  }
 
   const nullingresolvefunction = async() => {
     setResolveFunction(null);
@@ -114,7 +172,6 @@ function FiveCardsStud() {
         const internal = async() => {
           await nullingresolvefunction();
           resolve();
-          console.log('resolved');
         }
         return internal;
       });
@@ -122,29 +179,30 @@ function FiveCardsStud() {
   };
 
   const handleBettingRound = async () => {
-    while (!playershouldbet.some(person => person === true)){
-      console.log("former : ", indicator.present_value); 
-      if (indicator.present_value === 0){
+    while (playershouldbetRef.current.some(person => person === true)){
+      if (indicatorRef.current === 0){
         await waitForPlayerDecision();
-        await new Promise(resolve => setTimeout(resolve, 0));
-        console.log("right after : ", indicator.present_value);
       } else {
-        const decision = aiDecision();
-        if (decision === 'call') {
-          call(indicator.present_value);
-        } else if (decision === 'fold') {
-          fold(indicator.present_value);
+        const decision = await aiDecision();
+        console.log("bot", indicatorRef.current, " decision:", decision);
+        if (decision.decision === 'call') {
+          await call(indicatorRef.current);
+          console.log('executed call for bot ', indicatorRef.current);
+        } else if (decision.decision === 'fold') {
+          await fold(indicatorRef.current);
+          console.log('executed fold for bot ', indicatorRef.current);
         } else {
-          raise(indicator.present_value); // I am not using this for now (Adjusted Bot.js)
+          await raise(indicatorRef.current); // I am not using this for now (Adjusted Bot.js)
+          console.log('executed raise for bot ', indicatorRef.current);
         }
       }
-      console.log("latter : ", indicator.present_value);   
+      console.log(playershouldbetRef.current);
     }
   };
 
 
 
-  const shuffleCards = () => {
+  const shuffleCards = async() => {
     const cardFiles = [
       '2D', '3D', '4D', '5D', '6D', '7D', '8D', '9D', '10D', 'JD', 'QD', 'KD', 'AD',
       '2C', '3C', '4C', '5C', '6C', '7C', '8C', '9C', '10C', 'JC', 'QC', 'KC', 'AC',
@@ -152,8 +210,7 @@ function FiveCardsStud() {
       '2S', '3S', '4S', '5S', '6S', '7S', '8S', '9S', '10S', 'JS', 'QS', 'KS', 'AS'
     ];
 
-    const shuffled = shuffle(cardFiles);
-    change_indicator(0) // 항상 플레이어가 베팅 보스
+    const shuffled = shuffle(cardFiles); 
 
     setShuffledCards(shuffled);
     setDeckShuffled(true);
@@ -163,9 +220,9 @@ function FiveCardsStud() {
     setActivePlayers(new Array(playerCount).fill(true));
     setIs_beginning(true);
     setPot(0);
-    setRaised(default_ante);
     setIs_first_operation(false);
-    setGamestarted(true);
+    await change_indicator(0);
+    setRaised(default_ante);
   };
 
   const fold = async (playerIndex) => {
@@ -174,66 +231,66 @@ function FiveCardsStud() {
       newActivePlayers[playerIndex] = false;
       return newActivePlayers;
     });
-    setPlayershouldbet(prevPlayershouldbet => {
-      const newPlayershouldbet = [...prevPlayershouldbet];
-      newPlayershouldbet[playerIndex] = false;
-      return newPlayershouldbet;
-    })
+    
+    const duty = async() => {
+      setPlayershouldbet(prevPlayershouldbet => {
+        const newPlayershouldbet = [...prevPlayershouldbet];
+        newPlayershouldbet[playerIndex] = false;
+        return newPlayershouldbet;
+      });
+    }
+    await duty();
+    await inc_indicator();
   };
 
   const call = async (playerIndex) => {
-    if (moneys[playerIndex] > raised) {
+    if (moneysRef.current[playerIndex] > raised) {
       setPot(prevPot => prevPot + raised); 
     } else { //All-in
-      setPot(prevPot => prevPot + moneys[playerIndex]);
+      setPot(prevPot => prevPot + moneysRef.current[playerIndex]);
     }
-
-    const newMoney = ( moneys[playerIndex] - raised > 0 ? moneys[playerIndex] - raised : 0 )
+   
+    const newMoney = ( moneysRef.current[playerIndex] - raised > 0 ? moneysRef.current[playerIndex] - raised : 0 )
     setMoneys(prevMoneys => {
       const newMoneys = [...prevMoneys];
       newMoneys[playerIndex] = newMoney;
       return newMoneys;
-    })
+    });
 
-    setPlayershouldbet(prevPlayershouldbet => {
-      const newPlayershouldbet = [...prevPlayershouldbet];
-      newPlayershouldbet[playerIndex] = false;
-      return newPlayershouldbet;
-    })
-
+    const duty = async() => {
+        setPlayershouldbet(prevPlayershouldbet => {
+          const newPlayershouldbet = [...prevPlayershouldbet];
+          newPlayershouldbet[playerIndex] = false;
+          return newPlayershouldbet;
+      });
+    }
+    await duty();
     await inc_indicator();
   };
 
   const inc_indicator = async() => {
-    console.log("indicator has been increased");
     setIndicator(prevIndicator => {
-      let newIndicator = prevIndicator.present_value + 1;
+      console.log("Old indicator value: ", prevIndicator);
+      let newIndicator = prevIndicator + 1;
       let round = 0;
-      while (!activePlayers[newIndicator]) {
+      while (!playershouldbetRef.current[newIndicator]) {
         newIndicator++;
         if (newIndicator > playerCount-1) {
           newIndicator = 0;
           round++;
         }
-        if (round > 2){ // game over
-          return {
-            present_value: null,
-            previous_value: prevIndicator.present_value
-          };
+        if (round > 3){ // betting round over
+          return null;
         }
       }
-      return {
-        present_value: newIndicator,
-        previous_value: prevIndicator.present_value
-      };
+      console.log("New indicator value: ", newIndicator);
+      return newIndicator;
     });
   }
 
-  const change_indicator = ((ch) => {
-    setIndicator(prevIndicator => {
-      return {present_value:ch, previous_value:prevIndicator.present_value}
-    });
-  })
+  const change_indicator = (async(ch) => {
+    setIndicator(ch);
+  });
 
   const raise = async(playerIndex) => {
     if (moneys[playerIndex] > pot*1.5) {
@@ -241,12 +298,14 @@ function FiveCardsStud() {
     } else { //All-in
       setRaised(moneys[playerIndex]);
     }
+
+    await inc_indicator();
   };
 
   const drawCards = async() => {
     setCardsDrawn(prevCardsDrawn => {
       return prevCardsDrawn.map((cards, index) => {
-        if (activePlayers[index] && cards < 5) {
+        if (activePlayersRef.current[index] && cards < 5) {
           const newHand = hands[index].concat(shuffledCards[cards + index * 5]);
           setHands(prevHands => {
             const newHands = [...prevHands];
@@ -304,20 +363,20 @@ function FiveCardsStud() {
         boxes.push(
           <div
             key={`Player-${i}`}
-            className={`btn btn-sm fold-button ${indicator.present_value == i ? 'btn-primary' : !activePlayers[i] ? 'btn-secondary' : 'btn-outline-danger'}`}
+            className={`btn btn-sm fold-button ${indicatorRef.current == i ? 'btn-primary' : !activePlayersRef.current[i] ? 'btn-secondary' : 'btn-outline-danger'}`}
             style={{ left: `${x-5}%`, top: `${y - 11}%` }} // 원의 각 지점보다 약간 위에 둠
           >
-            Bot {i} : {moneys[i]}
+            Bot {i} : {moneysRef.current[i]}
           </div>
         );
       } else {
         boxes.push(
           <div
             key={`Player-${i}`}
-            className={`btn btn-sm fold-button ${indicator.present_value == i ? 'btn-primary' : !activePlayers[i] ? 'btn-secondary' : 'btn-outline-danger'}`}
+            className={`btn btn-sm fold-button ${indicatorRef.current == i ? 'btn-primary' : !activePlayersRef.current[i] ? 'btn-secondary' : 'btn-outline-danger'}`}
             style={{ left: `${x-5}%`, top: `${y - 11}%` }} // 원의 각 지점보다 약간 위에 둠
           >
-            Player : {moneys[i]}
+            Player : {moneysRef.current[i]}
           </div>
         );
       }
@@ -335,7 +394,7 @@ function FiveCardsStud() {
           <button
             className={`btn btn-sm ${deckShuffled ? 'btn-primary' : 'btn-secondary'} shuffle-button`}
             onClick={shuffleCards}
-            disabled={deckShuffled && !showFifthCard}
+            disabled={deckShuffled && gamestartedRef.current}
           >
             New Game
           </button>
@@ -349,7 +408,7 @@ function FiveCardsStud() {
           <button
             className={`btn btn-sm ${cardsDrawn.some(cards => cards === 5) ? 'btn-primary' : 'btn-secondary'} open-button`}
             onClick={handleOpen}
-            disabled={!cardsDrawn.some(cards => cards === 5) || showFifthCard}
+            disabled={!cardsDrawn.some(cards => cards === 5) || !gamestartedRef.current}
           >
             Open
           </button>
@@ -357,21 +416,21 @@ function FiveCardsStud() {
             <button
               className="btn btn-sm btn-warning action-button"
               onClick={() => call(0)} // 플레이어가 콜
-              disabled={indicator.present_value !== 0}
+              disabled={indicatorRef.current !== 0}
             >
               Call
             </button>
             <button
               className="btn btn-sm btn-danger action-button"
               onClick={() => raise(0)} // 플레이어가 레이즈
-              disabled={indicator.present_value !== 0}
+              disabled={indicatorRef.current !== 0}
             >
               Raise
             </button>
             <button
               className="btn btn-sm btn-secondary action-button"
               onClick={() => fold(0)} // 플레이어가 폴드
-              disabled={indicator.present_value !== 0}
+              disabled={indicatorRef.current !== 0}
             >
               Fold
             </button>
