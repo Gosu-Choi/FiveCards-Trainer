@@ -279,11 +279,12 @@ function FiveCardsStud() {
           newIndicator = 0;
           round++;
         }
-        if (round > 3){ // betting round over
+        if (round > 3){
           return null;
         }
       }
       console.log("New indicator value: ", newIndicator);
+      indicatorRef.current = newIndicator; // 괜찮은 방법. 더 괜찮게 하려면 update 함수 따로 정의해서 indicator, setIndicator, indicatorRef를 묶은 다음 한 번에 정의할 수도.
       return newIndicator;
     });
   }
