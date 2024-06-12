@@ -61,6 +61,16 @@ function compareHands(handA, handB, face) {
   return 0; // 무승부
 }
 
+function facemaker(hands) {
+  let face = new Array(hands.length).fill([]);
+  for (let i=0; i<hands.length; i++){
+    for (let j=1; j<hands[i].length; j++){
+      face[i] = face[i].concat(hands[i][j]);
+    }
+  }
+  return face;
+}
+
 // 승자를 판단하는 함수
 function determineWinner(hands, activity, face) {
   let bestHandIndex;
@@ -90,4 +100,4 @@ function determineWinner(hands, activity, face) {
   // return winners;
 }
 
-module.exports = { calculateHandRank, determineWinner };
+module.exports = { calculateHandRank, determineWinner, facemaker };

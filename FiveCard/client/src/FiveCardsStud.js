@@ -4,7 +4,7 @@ import { useAuth } from './AuthContext';
 import { shuffle } from './utils'; // 섞기 함수 임포트
 import './FiveCardsStud.css'; // 스타일을 위한 CSS 파일 임포트
 import 'bootstrap/dist/css/bootstrap.min.css'; // 부트스트랩 CSS 임포트
-import { calculateHandRank, determineWinner } from './pokerHands';
+import { calculateHandRank, determineWinner, facemaker } from './pokerHands';
 import { aiDecision } from './Bot';
 
 function FiveCardsStud() {
@@ -144,10 +144,11 @@ function FiveCardsStud() {
     if (gamestartedRef.current) {
       const gameLoop = async () => {
         setBetting_round(1);
-        while (activePlayersRef.current.filter(person => person === true).length > 1 && betting_roundRef.current < 6) {
-          await change_indicator(determineWinner(handsRef.current, activePlayersRef.current, true)); // 탑을 베팅 보스로 설정 필요. 일단 플레이어 베팅 보스
-          await setPlayershouldbetfunc();
+        while (activePlayersRef.current.filter(person => person === true).length > 1 && betting_roundRef.current < 5) { // 조정 필요. open 버튼 로직에도 개입함
           await drawCards();
+          await change_indicator(determineWinner(facemaker(handsRef.current), activePlayersRef.current, true)); 
+          console.log(calculateHandRank(facemaker(handsRef.current[0]), false)); // 7D 8D -> 2배 되어도 투페어인데 포카드로 인식하는 문제있음
+          await setPlayershouldbetfunc();
           await handleBettingRound();
           setBetting_round(prevBetting_Round => prevBetting_Round + 1);
           betting_roundRef.current = betting_roundRef.current + 1;
@@ -244,7 +245,7 @@ function FiveCardsStud() {
     setRaised(0);
     setTurn(true);
     setTurnmoneymanage(new Array(playerCount).fill(0));
-    while (playershouldbetRef.current.some(person => person === true)){
+    while (playershouldbetRef.current.some(person => person === true) && activePlayersRef.current.filter(person => person === true).length > 1){
       if (indicatorRef.current === 0){
         await waitForPlayerDecision();
       } else {
@@ -390,10 +391,11 @@ function FiveCardsStud() {
     setCardsDrawn(prevCardsDrawn => {
       return prevCardsDrawn.map((cards, index) => {
         if (activePlayersRef.current[index] && cards < 5) {
-          const newHand = hands[index].concat(shuffledCards[cards + index * 5]);
+          const newHand = handsRef.current[index].concat(shuffledCards[cards + index * 5]);
           setHands(prevHands => {
             const newHands = [...prevHands];
             newHands[index] = newHand;
+            handsRef.current = newHands; // Strict Mode로 문제발생, handsRef.current를 최신화하는 다른 방법 떠올려야 *만약 이렇게 안 하면 베팅 보스 설정에서 문제 발생
             return newHands;
           });
           return cards + 1;
@@ -486,7 +488,7 @@ function FiveCardsStud() {
           <button
             className={`btn btn-sm ${cardsDrawn.some(cards => cards === 5) ? 'btn-primary' : 'btn-secondary'} open-button`}
             onClick={handleOpen}
-            disabled={!cardsDrawn.some(cards => cards === 5) || showFifthCard}
+            disabled={betting_roundRef.current < 5 || showFifthCard}
           >
             Open
           </button>
