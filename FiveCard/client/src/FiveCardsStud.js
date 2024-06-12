@@ -30,9 +30,14 @@ function FiveCardsStud() {
   const [is_beginning, setIs_beginning] = useState(false);
   const [gamestarted, setGamestarted] = useState(false);
   const [resolveFunction, setResolveFunction] = useState(null);
+  const [resolveFunction2, setResolveFunction2] = useState(null);
   const [turn, setTurn] = useState(false);
   const [betting_round, setBetting_round] = useState(1);
+  const [winner_index, setWinner_index] = useState(null);
 
+  const showFifthCardRef = useRef(showFifthCard);
+  const handsRef = useRef(hands);
+  const winner_indexRef = useRef(winner_index);
   const betting_roundRef = useRef(betting_round);
   const potRef = useRef(pot);
   const turnRef = useRef(turn);
@@ -45,6 +50,18 @@ function FiveCardsStud() {
   moneysRef.current = moneys;
   const activePlayersRef = useRef(activePlayers);
   const gamestartedRef = useRef(gamestarted);
+
+  useEffect(() => {
+    showFifthCardRef.current = showFifthCard;
+  }, [showFifthCard]);
+
+  useEffect(() => {
+    winner_indexRef.current = winner_index;
+  }, [winner_index]);
+
+  useEffect(() => {
+    handsRef.current = hands;
+  }, [hands]);
 
   useEffect(() => {
     betting_roundRef.current = betting_round;
@@ -127,17 +144,35 @@ function FiveCardsStud() {
     if (gamestartedRef.current) {
       const gameLoop = async () => {
         setBetting_round(1);
-        while (activePlayersRef.current.filter(person => person === true).length > 1) {
-          console.log(moneysRef.current);
-          await change_indicator(0); // 탑을 베팅 보스로 설정 필요. 일단 플레이어 베팅 보스
+        while (activePlayersRef.current.filter(person => person === true).length > 1 && betting_roundRef.current < 6) {
+          await change_indicator(determineWinner(handsRef.current, activePlayersRef.current, true)); // 탑을 베팅 보스로 설정 필요. 일단 플레이어 베팅 보스
           await setPlayershouldbetfunc();
           await drawCards();
           await handleBettingRound();
           setBetting_round(prevBetting_Round => prevBetting_Round + 1);
+          betting_roundRef.current = betting_roundRef.current + 1;
         }
+        const gameover = async() => {
+          setGamestarted(false);
+          gamestartedRef.current = false;
+          const winner = determineWinner(handsRef.current, activePlayersRef.current, false);
+          setWinner_index(winner);
+          winner_indexRef.current = winner;
+          setMoneys(prevMoneys => {
+            const newMoney = [...prevMoneys];
+            newMoney[winner] = newMoney[winner] + potRef.current;
+            moneysRef.current = newMoney;
+            return newMoney;
+          })
+          setPot(0);
+          potRef.current = 0;
+        }
+        if (activePlayersRef.current.filter(person => person === true).length > 1 && showFifthCardRef.current === false){
+          await waitForOpen();
+        }
+        await gameover();
       };
       gameLoop();
-      setGamestarted(false); // 종료 시 판돈 지급 및 gamestarted 재설정 필요
     }
   }, [gamestarted]);
 
@@ -148,6 +183,14 @@ function FiveCardsStud() {
       }
     } 
   }, [indicator]);
+
+  useEffect(() => {
+    if(!is_first_operation && !is_beginning){
+      if (showFifthCardRef.current === true && resolveFunction2) {
+        resolveFunction2();
+      }
+    } 
+  }, [showFifthCard]);
 
   const setPlayershouldbetfunc = async() => {
     const duty1 = async() => {
@@ -169,11 +212,27 @@ function FiveCardsStud() {
     setResolveFunction(null);
   }
 
+  const nullingresolvefunction2 = async() => {
+    setResolveFunction2(null);
+  }
+
   const waitForPlayerDecision = async() => {
     return new Promise(resolve => {
       setResolveFunction(() => {
         const internal = async() => {
           await nullingresolvefunction();
+          resolve();
+        }
+        return internal;
+      });
+    });
+  };
+
+  const waitForOpen = async() => {
+    return new Promise(resolve => {
+      setResolveFunction2(() => {
+        const internal = async() => {
+          await nullingresolvefunction2();
           resolve();
         }
         return internal;
@@ -306,19 +365,25 @@ function FiveCardsStud() {
   });
 
   const raise = async(playerIndex) => {
-    if (moneysRef.current[playerIndex] > potRef.current*1.5) {
-      setRaised(potRef.current*1.5);
-      raisedRef.current = potRef.current*1.5;
-    } else { //All-in
-      setRaised(moneysRef.current[playerIndex]);
-      raisedRef.current = moneysRef.current[playerIndex];
-    }
-    console.log("player ", playerIndex, " raised. raised: ", raisedRef.current);
     const betduty = async(i) => {
       await setPlayershouldbetfunc();
       call(i);
     }
-    await betduty(playerIndex);
+
+    if (moneysRef.current[playerIndex] > potRef.current*1.5) {
+      setRaised(potRef.current*1.5);
+      raisedRef.current = potRef.current*1.5;
+      await betduty(playerIndex);
+      console.log("player ", playerIndex, " raised. raised: ", raisedRef.current);
+    } else if (moneysRef.current[playerIndex] > raisedRef.current) { //All-in
+      setRaised(turnmoneymanageRef.current[playerIndex] + moneysRef.current[playerIndex]);
+      raisedRef.current = turnmoneymanageRef.current[playerIndex] + moneysRef.current[playerIndex];
+      await betduty(playerIndex);
+      console.log("player ", playerIndex, " all-in. raised: ", raisedRef.current);
+    } else {
+      await call(playerIndex);
+      console.log("player ", playerIndex, " called by raise. raised: ", raisedRef.current);
+    }
   };
 
   const drawCards = async() => {
@@ -342,6 +407,7 @@ function FiveCardsStud() {
     const allCardsDrawn = cardsDrawn.some(cards => cards === 5);
     if (allCardsDrawn) {
       setShowFifthCard(true);
+      showFifthCardRef.current = true;
     }
     setRaised(0);
     setGamestarted(false);
@@ -362,7 +428,7 @@ function FiveCardsStud() {
         const boxX = x + 5 * (j - 2); // 가로로 배치, -2는 중앙 정렬을 위해
         let cardFilePath = `/cards/${shuffledCards[j + i * 5]}.svg`; // 무작위로 섞인 카드 파일 경로
 
-        if (i !== 0 && j === 0 && !showFifthCard) {
+        if (i !== 0 && j === 0 && ((showFifthCard && !activePlayersRef.current[i]) || !showFifthCard)) {
           cardFilePath = `/cards/card_back.svg`;
         }
 
@@ -409,21 +475,14 @@ function FiveCardsStud() {
       <div className="circle">
         {renderBoxes()}
         <div className="button-container">
-          Betting Round : {betting_roundRef.current}, Pot: {potRef.current}
+          Betting Round : {betting_roundRef.current}, Pot: {potRef.current}, winner_index: {winner_indexRef.current}
           <button
             className={`btn btn-sm ${deckShuffled ? 'btn-primary' : 'btn-secondary'} shuffle-button`}
             onClick={shuffleCards}
-            disabled={gamestarted}
+            disabled={gamestartedRef.current}
           >
             New Game
           </button>
-          {/* <button
-            className={`btn btn-sm ${deckShuffled ? 'btn-primary' : 'btn-secondary'} continue-button`}
-            onClick={drawCards}
-            disabled={!deckShuffled || cardsDrawn.some(cards => cards >= 5)}
-          >
-            Continue
-          </button> */}
           <button
             className={`btn btn-sm ${cardsDrawn.some(cards => cards === 5) ? 'btn-primary' : 'btn-secondary'} open-button`}
             onClick={handleOpen}

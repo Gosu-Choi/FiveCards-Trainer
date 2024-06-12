@@ -62,21 +62,32 @@ function compareHands(handA, handB, face) {
 }
 
 // 승자를 판단하는 함수
-function determineWinner(hands, face) {
-  let bestHandIndex = 0;
-  for (let i = 1; i < hands.length; i++) {
+function determineWinner(hands, activity, face) {
+  let bestHandIndex;
+  for (let i = 0; i < hands.length; i++) {
+    if (!activity[i]){
+      continue;
+    }
+    bestHandIndex = i;
+    break;
+  }
+
+  for (let i = 0; i < hands.length; i++) {
+    if (!activity[i]){
+      continue;
+    }
     if (compareHands(hands[i], hands[bestHandIndex], face) > 0) {
       bestHandIndex = i;
     }
   }
-
-  const winners = [];
-  for (let i = 0; i < hands.length; i++) {
-    if (compareHands(hands[i], hands[bestHandIndex], face) === 0) {
-      winners.push(i);
-    }
-  }
-  return winners;
+  return bestHandIndex;
+  // const winners = [];
+  // for (let i = 0; i < hands.length; i++) {
+  //   if (compareHands(hands[i], hands[bestHandIndex], face) === 0) {
+  //     winners.push(i);
+  //   }
+  // }
+  // return winners;
 }
 
 module.exports = { calculateHandRank, determineWinner };
