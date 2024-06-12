@@ -106,6 +106,7 @@ function FiveCardsStud() {
     if (!is_first_operation){
       if (is_beginning) {
         const beginning_func = async() => {
+          await drawCards();
           while (playershouldbetRef.current.some(person => person === true)){
             if (moneys[indicatorRef.current] < default_ante){
               await fold(indicatorRef.current);
@@ -305,12 +306,12 @@ function FiveCardsStud() {
   });
 
   const raise = async(playerIndex) => {
-    if (moneys[playerIndex] > potRef.current*1.5) {
+    if (moneysRef.current[playerIndex] > potRef.current*1.5) {
       setRaised(potRef.current*1.5);
       raisedRef.current = potRef.current*1.5;
     } else { //All-in
-      setRaised(moneys[playerIndex]);
-      raisedRef.current = moneys[playerIndex];
+      setRaised(moneysRef.current[playerIndex]);
+      raisedRef.current = moneysRef.current[playerIndex];
     }
     console.log("player ", playerIndex, " raised. raised: ", raisedRef.current);
     const betduty = async(i) => {
