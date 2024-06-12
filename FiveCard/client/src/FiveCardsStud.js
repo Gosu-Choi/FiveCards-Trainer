@@ -16,6 +16,7 @@ function FiveCardsStud() {
   const [shuffledCards, setShuffledCards] = useState([]);
   const [activePlayers, setActivePlayers] = useState([]);
   const [playershouldbet, setPlayershouldbet] = useState([]);
+  const [turnmoneymanage, setTurnmoneymanage] = useState([]);
   const [cardsDrawn, setCardsDrawn] = useState([]);
   const [showFifthCard, setShowFifthCard] = useState(false);
   const [deckShuffled, setDeckShuffled] = useState(false);
@@ -29,7 +30,15 @@ function FiveCardsStud() {
   const [is_beginning, setIs_beginning] = useState(false);
   const [gamestarted, setGamestarted] = useState(false);
   const [resolveFunction, setResolveFunction] = useState(null);
+  const [turn, setTurn] = useState(false);
+  const [betting_round, setBetting_round] = useState(1);
 
+  const betting_roundRef = useRef(betting_round);
+  const potRef = useRef(pot);
+  const turnRef = useRef(turn);
+  const turnmoneymanageRef = useRef(turnmoneymanage);
+  turnmoneymanageRef.current = turnmoneymanage;
+  const raisedRef = useRef(raised);
   const indicatorRef = useRef(indicator);
   const playershouldbetRef = useRef(playershouldbet);
   const moneysRef = useRef(moneys);
@@ -38,8 +47,24 @@ function FiveCardsStud() {
   const gamestartedRef = useRef(gamestarted);
 
   useEffect(() => {
+    betting_roundRef.current = betting_round;
+  }, [betting_round]);
+
+  useEffect(() => {
     indicatorRef.current = indicator;
   }, [indicator]);
+
+  useEffect(() => {
+    potRef.current = pot;
+  }, [pot]);
+
+  useEffect(() => {
+    turnmoneymanageRef.current = turnmoneymanage;
+  }, [turnmoneymanage]);
+
+  useEffect(() => {
+    turnRef.current = turn;
+  }, [turn]);
 
   useEffect(() => {
     activePlayersRef.current = activePlayers;
@@ -72,51 +97,42 @@ function FiveCardsStud() {
       setCardsDrawn(new Array(playerCount).fill(0));
       setHands(new Array(playerCount).fill([]));
       setMoneys(new Array(playerCount).fill(10000));
+      setTurnmoneymanage(new Array(playerCount).fill(0));
     }
   }, [playerCount]);
 
   useEffect(()=> {
+    raisedRef.current = raised;
     if (!is_first_operation){
       if (is_beginning) {
         const beginning_func = async() => {
-          console.log("playershouldbet: ", playershouldbetRef.current);
-          console.log("indicator: ", indicatorRef.current);
           while (playershouldbetRef.current.some(person => person === true)){
             if (moneys[indicatorRef.current] < default_ante){
               await fold(indicatorRef.current);
             } else {
               await call(indicatorRef.current);
-              console.log("playershouldbet: ", playershouldbetRef.current);
-              console.log("indicator: ", indicatorRef.current);
             }
           }
           setIs_beginning(false);
           setGamestarted(true);
         }
         beginning_func();
-      } else {
-        const betduty = async() => {
-          await setPlayershouldbetfunc(0);
-          call(indicatorRef.current);
-        }
-        betduty();
-      }
+      } 
     }
-  }, [raised]) 
-  // raised가 바뀌는 경우는 두 가지. 플레이어의 raise 선언 또는 게임 시작. 
-  // 각각을 is_beginning으로 구분 후 코딩
-  // raise 선언 시 해당 인물은 콜, 폴드하지 않은 모든 다른 사람의 베팅 의무 발생 (playershouldbet)
+  }, [raised])
 
   useEffect(() => {
     gamestartedRef.current = gamestarted;
     if (gamestartedRef.current) {
       const gameLoop = async () => {
+        setBetting_round(1);
         while (activePlayersRef.current.filter(person => person === true).length > 1) {
           console.log(moneysRef.current);
           await change_indicator(0); // 탑을 베팅 보스로 설정 필요. 일단 플레이어 베팅 보스
-          await setPlayershouldbetfunc(1);
+          await setPlayershouldbetfunc();
           await drawCards();
-          await handleBettingRound(); 
+          await handleBettingRound();
+          setBetting_round(prevBetting_Round => prevBetting_Round + 1);
         }
       };
       gameLoop();
@@ -132,34 +148,20 @@ function FiveCardsStud() {
     } 
   }, [indicator]);
 
-  const setPlayershouldbetfunc = async(i) => {
-    if (i === 0){
-      const duty0 = async() => {
-        setPlayershouldbet(prevPlayershouldbet => {
-          const newPlayershouldbet = [...prevPlayershouldbet];
-          for (let i = 0; i < playerCount; i++){
-            if (activePlayersRef.current[i] && i!==indicatorRef.current){
-              newPlayershouldbet[i] = true;
-            }
+  const setPlayershouldbetfunc = async() => {
+    const duty1 = async() => {
+      setPlayershouldbet(prevPlayershouldbet => {
+        const newPlayershouldbet = [...prevPlayershouldbet];
+        for (let i = 0; i < playerCount; i++){
+          if (activePlayersRef.current[i]){
+            newPlayershouldbet[i] = true;
           }
-          return newPlayershouldbet;
-        });
-      }
-      await duty0();
-    } else {
-      const duty1 = async() => {
-        setPlayershouldbet(prevPlayershouldbet => {
-          const newPlayershouldbet = [...prevPlayershouldbet];
-          for (let i = 0; i < playerCount; i++){
-            if (activePlayersRef.current[i]){
-              newPlayershouldbet[i] = true;
-            }
-          }
-          return newPlayershouldbet;
-        });
-      }
-      await duty1();
+        }
+        playershouldbetRef.current = newPlayershouldbet;
+        return newPlayershouldbet;
+      });
     }
+    await duty1();
   }
 
   const nullingresolvefunction = async() => {
@@ -179,25 +181,25 @@ function FiveCardsStud() {
   };
 
   const handleBettingRound = async () => {
+    setRaised(0);
+    setTurn(true);
+    setTurnmoneymanage(new Array(playerCount).fill(0));
     while (playershouldbetRef.current.some(person => person === true)){
       if (indicatorRef.current === 0){
         await waitForPlayerDecision();
       } else {
         const decision = await aiDecision();
-        console.log("bot", indicatorRef.current, " decision:", decision);
         if (decision.decision === 'call') {
           await call(indicatorRef.current);
-          console.log('executed call for bot ', indicatorRef.current);
         } else if (decision.decision === 'fold') {
           await fold(indicatorRef.current);
-          console.log('executed fold for bot ', indicatorRef.current);
         } else {
-          await raise(indicatorRef.current); // I am not using this for now (Adjusted Bot.js)
-          console.log('executed raise for bot ', indicatorRef.current);
+          await raise(indicatorRef.current);
         }
       }
       console.log(playershouldbetRef.current);
     }
+    setTurn(false);
   };
 
 
@@ -218,6 +220,7 @@ function FiveCardsStud() {
     setCardsDrawn(new Array(playerCount).fill(0));
     setHands(new Array(playerCount).fill([]));
     setActivePlayers(new Array(playerCount).fill(true));
+    setTurnmoneymanage(new Array(playerCount).fill(0));
     setIs_beginning(true);
     setPot(0);
     setIs_first_operation(false);
@@ -226,6 +229,7 @@ function FiveCardsStud() {
   };
 
   const fold = async (playerIndex) => {
+    console.log("player ", playerIndex, " folded");
     setActivePlayers(prevActivePlayers => {
       const newActivePlayers = [...prevActivePlayers];
       newActivePlayers[playerIndex] = false;
@@ -236,6 +240,7 @@ function FiveCardsStud() {
       setPlayershouldbet(prevPlayershouldbet => {
         const newPlayershouldbet = [...prevPlayershouldbet];
         newPlayershouldbet[playerIndex] = false;
+        playershouldbetRef.current = newPlayershouldbet;
         return newPlayershouldbet;
       });
     }
@@ -244,33 +249,40 @@ function FiveCardsStud() {
   };
 
   const call = async (playerIndex) => {
-    if (moneysRef.current[playerIndex] > raised) {
-      setPot(prevPot => prevPot + raised); 
-    } else { //All-in
-      setPot(prevPot => prevPot + moneysRef.current[playerIndex]);
-    }
-   
-    const newMoney = ( moneysRef.current[playerIndex] - raised > 0 ? moneysRef.current[playerIndex] - raised : 0 )
+    console.log("player ", playerIndex, " called");
+    const moneyshouldpaid = raisedRef.current - turnmoneymanageRef.current[playerIndex];
+    const newMoney = ( moneysRef.current[playerIndex] - moneyshouldpaid > 0 ? moneysRef.current[playerIndex] - moneyshouldpaid : 0 );
+    const moneyPaid = ( moneysRef.current[playerIndex] - moneyshouldpaid > 0 ? moneyshouldpaid : moneysRef.current[playerIndex] );
+
+    setPot(prevPot => prevPot + moneyPaid)
+
     setMoneys(prevMoneys => {
       const newMoneys = [...prevMoneys];
       newMoneys[playerIndex] = newMoney;
       return newMoneys;
     });
 
+    setTurnmoneymanage(prevTurnmoneymanage => {
+      const newTurnmoney = [...prevTurnmoneymanage];
+      newTurnmoney[playerIndex] = newTurnmoney[playerIndex] + moneyPaid;
+      return newTurnmoney;
+    });
+
     const duty = async() => {
-        setPlayershouldbet(prevPlayershouldbet => {
-          const newPlayershouldbet = [...prevPlayershouldbet];
-          newPlayershouldbet[playerIndex] = false;
-          return newPlayershouldbet;
+      setPlayershouldbet(prevPlayershouldbet => {
+        const newPlayershouldbet = [...prevPlayershouldbet];
+        newPlayershouldbet[playerIndex] = false;
+        playershouldbetRef.current = newPlayershouldbet;
+        return newPlayershouldbet;
       });
     }
+
     await duty();
     await inc_indicator();
   };
 
   const inc_indicator = async() => {
     setIndicator(prevIndicator => {
-      console.log("Old indicator value: ", prevIndicator);
       let newIndicator = prevIndicator + 1;
       let round = 0;
       while (!playershouldbetRef.current[newIndicator]) {
@@ -283,7 +295,6 @@ function FiveCardsStud() {
           return null;
         }
       }
-      console.log("New indicator value: ", newIndicator);
       indicatorRef.current = newIndicator; // 괜찮은 방법. 더 괜찮게 하려면 update 함수 따로 정의해서 indicator, setIndicator, indicatorRef를 묶은 다음 한 번에 정의할 수도.
       return newIndicator;
     });
@@ -294,13 +305,19 @@ function FiveCardsStud() {
   });
 
   const raise = async(playerIndex) => {
-    if (moneys[playerIndex] > pot*1.5) {
-      setRaised(pot*1.5);
+    if (moneys[playerIndex] > potRef.current*1.5) {
+      setRaised(potRef.current*1.5);
+      raisedRef.current = potRef.current*1.5;
     } else { //All-in
       setRaised(moneys[playerIndex]);
+      raisedRef.current = moneys[playerIndex];
     }
-
-    await inc_indicator();
+    console.log("player ", playerIndex, " raised. raised: ", raisedRef.current);
+    const betduty = async(i) => {
+      await setPlayershouldbetfunc();
+      call(i);
+    }
+    await betduty(playerIndex);
   };
 
   const drawCards = async() => {
@@ -344,7 +361,7 @@ function FiveCardsStud() {
         const boxX = x + 5 * (j - 2); // 가로로 배치, -2는 중앙 정렬을 위해
         let cardFilePath = `/cards/${shuffledCards[j + i * 5]}.svg`; // 무작위로 섞인 카드 파일 경로
 
-        if (i !== 0 && j === 4 && !showFifthCard) {
+        if (i !== 0 && j === 0 && !showFifthCard) {
           cardFilePath = `/cards/card_back.svg`;
         }
 
@@ -391,25 +408,25 @@ function FiveCardsStud() {
       <div className="circle">
         {renderBoxes()}
         <div className="button-container">
-          Pot: {pot}
+          Betting Round : {betting_roundRef.current}, Pot: {potRef.current}
           <button
             className={`btn btn-sm ${deckShuffled ? 'btn-primary' : 'btn-secondary'} shuffle-button`}
             onClick={shuffleCards}
-            disabled={deckShuffled && gamestartedRef.current}
+            disabled={gamestarted}
           >
             New Game
           </button>
-          <button
+          {/* <button
             className={`btn btn-sm ${deckShuffled ? 'btn-primary' : 'btn-secondary'} continue-button`}
             onClick={drawCards}
             disabled={!deckShuffled || cardsDrawn.some(cards => cards >= 5)}
           >
             Continue
-          </button>
+          </button> */}
           <button
             className={`btn btn-sm ${cardsDrawn.some(cards => cards === 5) ? 'btn-primary' : 'btn-secondary'} open-button`}
             onClick={handleOpen}
-            disabled={!cardsDrawn.some(cards => cards === 5) || !gamestartedRef.current}
+            disabled={!cardsDrawn.some(cards => cards === 5) || showFifthCard}
           >
             Open
           </button>
