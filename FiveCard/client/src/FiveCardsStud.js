@@ -35,6 +35,7 @@ function FiveCardsStud() {
   const [betting_round, setBetting_round] = useState(1);
   const [winner_index, setWinner_index] = useState(null);
 
+  const cardsDrawnRef = useRef(cardsDrawn);
   const showFifthCardRef = useRef(showFifthCard);
   const handsRef = useRef(hands);
   const winner_indexRef = useRef(winner_index);
@@ -50,6 +51,10 @@ function FiveCardsStud() {
   moneysRef.current = moneys;
   const activePlayersRef = useRef(activePlayers);
   const gamestartedRef = useRef(gamestarted);
+
+  useEffect(() => {
+    cardsDrawnRef.current = cardsDrawn;
+  }, [cardsDrawn]);
 
   useEffect(() => {
     showFifthCardRef.current = showFifthCard;
@@ -147,7 +152,7 @@ function FiveCardsStud() {
         while (activePlayersRef.current.filter(person => person === true).length > 1 && betting_roundRef.current < 5) { // 조정 필요. open 버튼 로직에도 개입함
           await drawCards();
           await change_indicator(determineWinner(facemaker(handsRef.current), activePlayersRef.current, true)); 
-          console.log(calculateHandRank(facemaker(handsRef.current[0]), false)); // 7D 8D -> 2배 되어도 투페어인데 포카드로 인식하는 문제있음
+          console.log(calculateHandRank(facemaker(handsRef.current), true)); 
           await setPlayershouldbetfunc();
           await handleBettingRound();
           setBetting_round(prevBetting_Round => prevBetting_Round + 1);
@@ -157,6 +162,7 @@ function FiveCardsStud() {
           setGamestarted(false);
           gamestartedRef.current = false;
           const winner = determineWinner(handsRef.current, activePlayersRef.current, false);
+          console.log(calculateHandRank(handsRef.current[winner], false));
           setWinner_index(winner);
           winner_indexRef.current = winner;
           setMoneys(prevMoneys => {
@@ -249,10 +255,11 @@ function FiveCardsStud() {
       if (indicatorRef.current === 0){
         await waitForPlayerDecision();
       } else {
-        const decision = await aiDecision();
-        if (decision.decision === 'call') {
+        const dec = await aiDecision(indicatorRef.current, activePlayersRef.current, handsRef.current, handsRef.current.some(hand => hand.length === 5));
+        console.log(dec);
+        if (dec.decision === 'call') {
           await call(indicatorRef.current);
-        } else if (decision.decision === 'fold') {
+        } else if (dec.decision === 'fold') {
           await fold(indicatorRef.current);
         } else {
           await raise(indicatorRef.current);
@@ -388,21 +395,21 @@ function FiveCardsStud() {
   };
 
   const drawCards = async() => {
-    setCardsDrawn(prevCardsDrawn => {
-      return prevCardsDrawn.map((cards, index) => {
-        if (activePlayersRef.current[index] && cards < 5) {
-          const newHand = handsRef.current[index].concat(shuffledCards[cards + index * 5]);
-          setHands(prevHands => {
-            const newHands = [...prevHands];
-            newHands[index] = newHand;
-            handsRef.current = newHands; // Strict Mode로 문제발생, handsRef.current를 최신화하는 다른 방법 떠올려야 *만약 이렇게 안 하면 베팅 보스 설정에서 문제 발생
-            return newHands;
-          });
-          return cards + 1;
-        }
-        return cards;
-      });
+    const prevCardsDrawn = cardsDrawnRef.current;
+    const newCardsDrawn = prevCardsDrawn.map((cards, index) => {
+      if (activePlayersRef.current[index] && cards < 5) {
+        const newHand = handsRef.current[index].concat(shuffledCards[cards + index * 5]);
+        const newHands = [...handsRef.current]
+        newHands[index] = newHand;
+        handsRef.current = newHands;
+        setHands(newHands);
+        console.log(handsRef.current);
+        return cards + 1;
+      }
+      return cards;
     });
+    setCardsDrawn(newCardsDrawn);
+    cardsDrawnRef.current = newCardsDrawn;
   };
 
   const handleOpen = () => {

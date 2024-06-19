@@ -6,8 +6,9 @@ function getCardRank(card) {
   return ranks.indexOf(card[0]);
 }
 
-// 핸드의 순위를 계산하는 함수
-function calculateHandRank(hand, face) {
+// 핸드의 순위를 계산하는 함수. 무늬도 보게끔 해야 함. ranks.indexOf(Main_card) + suits.indexOf(Main_card)/10
+// sortedHand 혹은 handsRef.current 에 문제가 있음. 해결 필요.
+function calculateHandRank(hand, is_face) {
   const sortedHand = hand.sort((a, b) => getCardRank(b) - getCardRank(a)); // 높은 카드가 먼저 오도록 정렬
 
   const isFlush = sortedHand.every(card => card[1] === sortedHand[0][1]);
@@ -21,9 +22,9 @@ function calculateHandRank(hand, face) {
     const rank = card[0];
     rankCounts[rank] = (rankCounts[rank] || 0) + 1;
   });
-
+  
   const counts = Object.values(rankCounts).sort((a, b) => b - a);
-  if (face === false){ // face가 false인 경우 5장 보기의 승자를 return
+  if (is_face === false){ // face가 false인 경우 5장 보기의 승자를 return
     if (isStraight && isFlush) return { rank: 8, highCard: sortedHand, hand: "Straight-Flush!!" }; // 스트레이트 플러시
     if (counts[0] === 4) return { rank: 7, highCard: sortedHand, hand: "Four-Cards!!" }; // 포카드
     if (counts[0] === 3 && counts[1] === 2) return { rank: 6, highCard: sortedHand, hand: "Full-House!" }; // 풀하우스
@@ -43,9 +44,9 @@ function calculateHandRank(hand, face) {
 }
 
 // 두 핸드의 승자를 결정하는 함수
-function compareHands(handA, handB, face) {
-  const rankA = calculateHandRank(handA, face);
-  const rankB = calculateHandRank(handB, face);
+function compareHands(handA, handB, is_face) {
+  const rankA = calculateHandRank(handA, is_face);
+  const rankB = calculateHandRank(handB, is_face);
 
   if (rankA.rank > rankB.rank) return 1;
   if (rankA.rank < rankB.rank) return -1;
@@ -72,7 +73,7 @@ function facemaker(hands) {
 }
 
 // 승자를 판단하는 함수
-function determineWinner(hands, activity, face) {
+function determineWinner(hands, activity, is_face) {
   let bestHandIndex;
   for (let i = 0; i < hands.length; i++) {
     if (!activity[i]){
@@ -86,14 +87,14 @@ function determineWinner(hands, activity, face) {
     if (!activity[i]){
       continue;
     }
-    if (compareHands(hands[i], hands[bestHandIndex], face) > 0) {
+    if (compareHands(hands[i], hands[bestHandIndex], is_face) > 0) {
       bestHandIndex = i;
     }
   }
   return bestHandIndex;
   // const winners = [];
   // for (let i = 0; i < hands.length; i++) {
-  //   if (compareHands(hands[i], hands[bestHandIndex], face) === 0) {
+  //   if (compareHands(hands[i], hands[bestHandIndex], is_face) === 0) {
   //     winners.push(i);
   //   }
   // }
