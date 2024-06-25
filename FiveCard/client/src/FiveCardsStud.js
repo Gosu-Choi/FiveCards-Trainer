@@ -151,8 +151,8 @@ function FiveCardsStud() {
         setBetting_round(1);
         while (activePlayersRef.current.filter(person => person === true).length > 1 && betting_roundRef.current < 5) { // 조정 필요. open 버튼 로직에도 개입함
           await drawCards();
-          await change_indicator(determineWinner(facemaker(handsRef.current), activePlayersRef.current, true)); 
-          console.log(calculateHandRank(facemaker(handsRef.current), true)); 
+          console.log(handsRef.current, facemaker(handsRef.current)); 
+          await change_indicator(determineWinner(facemaker(handsRef.current), activePlayersRef.current, true));
           await setPlayershouldbetfunc();
           await handleBettingRound();
           setBetting_round(prevBetting_Round => prevBetting_Round + 1);
@@ -274,10 +274,10 @@ function FiveCardsStud() {
 
   const shuffleCards = async() => {
     const cardFiles = [
-      '2D', '3D', '4D', '5D', '6D', '7D', '8D', '9D', '10D', 'JD', 'QD', 'KD', 'AD',
-      '2C', '3C', '4C', '5C', '6C', '7C', '8C', '9C', '10C', 'JC', 'QC', 'KC', 'AC',
-      '2H', '3H', '4H', '5H', '6H', '7H', '8H', '9H', '10H', 'JH', 'QH', 'KH', 'AH',
-      '2S', '3S', '4S', '5S', '6S', '7S', '8S', '9S', '10S', 'JS', 'QS', 'KS', 'AS'
+      '2D', '3D', '4D', '5D', '6D', '7D', '8D', '9D', 'TD', 'JD', 'QD', 'KD', 'AD',
+      '2C', '3C', '4C', '5C', '6C', '7C', '8C', '9C', 'TC', 'JC', 'QC', 'KC', 'AC',
+      '2H', '3H', '4H', '5H', '6H', '7H', '8H', '9H', 'TH', 'JH', 'QH', 'KH', 'AH',
+      '2S', '3S', '4S', '5S', '6S', '7S', '8S', '9S', 'TS', 'JS', 'QS', 'KS', 'AS'
     ];
 
     const shuffled = shuffle(cardFiles); 
@@ -370,6 +370,7 @@ function FiveCardsStud() {
 
   const change_indicator = (async(ch) => {
     setIndicator(ch);
+    indicatorRef.current = ch;
   });
 
   const raise = async(playerIndex) => {
@@ -398,11 +399,11 @@ function FiveCardsStud() {
     const prevCardsDrawn = cardsDrawnRef.current;
     const newCardsDrawn = prevCardsDrawn.map((cards, index) => {
       if (activePlayersRef.current[index] && cards < 5) {
-        const newHand = handsRef.current[index].concat(shuffledCards[cards + index * 5]);
-        const newHands = [...handsRef.current]
+        const newHand = handsRef.current[index].concat(shuffledCards[cards + index * 5]); 
+        const newHands = [...handsRef.current];
         newHands[index] = newHand;
-        handsRef.current = newHands;
         setHands(newHands);
+        handsRef.current = newHands;
         console.log(handsRef.current);
         return cards + 1;
       }
@@ -457,7 +458,7 @@ function FiveCardsStud() {
         boxes.push(
           <div
             key={`Player-${i}`}
-            className={`btn btn-sm fold-button ${indicatorRef.current == i ? 'btn-primary' : !activePlayersRef.current[i] ? 'btn-secondary' : 'btn-outline-danger'}`}
+            className={`btn btn-sm fold-button ${winner_indexRef.current == i ? 'btn-warning' : indicatorRef.current == i ? 'btn-primary' : !activePlayersRef.current[i] ? 'btn-secondary' : 'btn-outline-danger'}`}
             style={{ left: `${x-5}%`, top: `${y - 11}%` }} // 원의 각 지점보다 약간 위에 둠
           >
             Bot {i} : {moneysRef.current[i]}
@@ -467,7 +468,7 @@ function FiveCardsStud() {
         boxes.push(
           <div
             key={`Player-${i}`}
-            className={`btn btn-sm fold-button ${indicatorRef.current == i ? 'btn-primary' : !activePlayersRef.current[i] ? 'btn-secondary' : 'btn-outline-danger'}`}
+            className={`btn btn-sm fold-button ${winner_indexRef.current == i ? 'btn-warning' : indicatorRef.current == i ? 'btn-primary' : !activePlayersRef.current[i] ? 'btn-secondary' : 'btn-outline-danger'}`}
             style={{ left: `${x-5}%`, top: `${y - 11}%` }} // 원의 각 지점보다 약간 위에 둠
           >
             Player : {moneysRef.current[i]}
@@ -484,7 +485,7 @@ function FiveCardsStud() {
       <div className="circle">
         {renderBoxes()}
         <div className="button-container">
-          Betting Round : {betting_roundRef.current}, Pot: {potRef.current}, winner_index: {winner_indexRef.current}
+          Betting Round : {betting_roundRef.current}, Pot: {potRef.current}
           <button
             className={`btn btn-sm ${deckShuffled ? 'btn-primary' : 'btn-secondary'} shuffle-button`}
             onClick={shuffleCards}
