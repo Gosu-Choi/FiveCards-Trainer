@@ -8,6 +8,7 @@ import { calculateHandRank, determineWinner, facemaker } from './pokerHands';
 import { aiDecision } from './Bot';
 
 function FiveCardsStud() {
+  
   const default_player_number = 3;
   const { isAuthenticated } = useAuth();
   const location = useLocation();
@@ -118,17 +119,18 @@ function FiveCardsStud() {
       setPlayershouldbet(new Array(playerCount).fill(true));
       setCardsDrawn(new Array(playerCount).fill(0));
       setHands(new Array(playerCount).fill([]));
-      setMoneys(new Array(playerCount).fill(10000));
+      setMoneys(new Array(playerCount).fill(100000));
       setTurnmoneymanage(new Array(playerCount).fill(0));
     }
   }, [playerCount]);
 
   useEffect(()=> {
     raisedRef.current = raised;
+    console.log("raised has been changed");
     if (!is_first_operation){
       if (is_beginning) {
+        console.log("it is beginning");
         const beginning_func = async() => {
-          await drawCards();
           while (playershouldbetRef.current.some(person => person === true)){
             if (moneys[indicatorRef.current] < default_ante){
               await fold(indicatorRef.current);
@@ -136,6 +138,7 @@ function FiveCardsStud() {
               await call(indicatorRef.current);
             }
           }
+          await drawCards();
           setIs_beginning(false);
           setGamestarted(true);
         }
@@ -146,9 +149,12 @@ function FiveCardsStud() {
 
   useEffect(() => {
     gamestartedRef.current = gamestarted;
+    console.log("game started");
     if (gamestartedRef.current) {
       const gameLoop = async () => {
+        console.log("game started again");
         setBetting_round(1);
+        betting_roundRef.current = 1;
         while (activePlayersRef.current.filter(person => person === true).length > 1 && betting_roundRef.current < 5) { // 조정 필요. open 버튼 로직에도 개입함
           await drawCards();
           console.log(handsRef.current, facemaker(handsRef.current)); 
@@ -282,12 +288,15 @@ function FiveCardsStud() {
 
     const shuffled = shuffle(cardFiles); 
 
+    
+    setWinner_index(null);
     setShuffledCards(shuffled);
     setDeckShuffled(true);
     setShowFifthCard(false);
     setCardsDrawn(new Array(playerCount).fill(0));
     setHands(new Array(playerCount).fill([]));
     setActivePlayers(new Array(playerCount).fill(true));
+    setPlayershouldbet(new Array(playerCount).fill(true));
     setTurnmoneymanage(new Array(playerCount).fill(0));
     setIs_beginning(true);
     setPot(0);
@@ -322,8 +331,12 @@ function FiveCardsStud() {
     const newMoney = ( moneysRef.current[playerIndex] - moneyshouldpaid > 0 ? moneysRef.current[playerIndex] - moneyshouldpaid : 0 );
     const moneyPaid = ( moneysRef.current[playerIndex] - moneyshouldpaid > 0 ? moneyshouldpaid : moneysRef.current[playerIndex] );
 
-    setPot(prevPot => prevPot + moneyPaid)
-
+    setPot(prevPot => {
+      const newPot = prevPot + moneyPaid;
+      potRef.current = newPot;
+      return prevPot + moneyPaid;
+    });
+  
     setMoneys(prevMoneys => {
       const newMoneys = [...prevMoneys];
       newMoneys[playerIndex] = newMoney;
@@ -459,7 +472,7 @@ function FiveCardsStud() {
           <div
             key={`Player-${i}`}
             className={`btn btn-sm fold-button ${winner_indexRef.current == i ? 'btn-warning' : indicatorRef.current == i ? 'btn-primary' : !activePlayersRef.current[i] ? 'btn-secondary' : 'btn-outline-danger'}`}
-            style={{ left: `${x-5}%`, top: `${y - 11}%` }} // 원의 각 지점보다 약간 위에 둠
+            style={{ left: `${x-6}%`, top: `${y - 11}%` }} // 원의 각 지점보다 약간 위에 둠
           >
             Bot {i} : {moneysRef.current[i]}
           </div>
@@ -469,7 +482,7 @@ function FiveCardsStud() {
           <div
             key={`Player-${i}`}
             className={`btn btn-sm fold-button ${winner_indexRef.current == i ? 'btn-warning' : indicatorRef.current == i ? 'btn-primary' : !activePlayersRef.current[i] ? 'btn-secondary' : 'btn-outline-danger'}`}
-            style={{ left: `${x-5}%`, top: `${y - 11}%` }} // 원의 각 지점보다 약간 위에 둠
+            style={{ left: `${x-6}%`, top: `${y - 11}%` }} // 원의 각 지점보다 약간 위에 둠
           >
             Player : {moneysRef.current[i]}
           </div>
