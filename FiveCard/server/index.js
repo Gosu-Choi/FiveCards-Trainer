@@ -3,6 +3,7 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 const { PrismaClient } = require('@prisma/client');
 const bcrypt = require('bcryptjs');
+const axios = require('axios');
 
 const app = express();
 const prisma = new PrismaClient();
@@ -40,6 +41,34 @@ app.post('/signup', async (req, res) => {
   }
 });
 
+app.post('/bot-communication', async (req, res) => {
+  const { message } = req.body;
+  console.log("Received message:", message); // 요청 수신 시 로그
+
+  try {
+    const response = await axios.post('https://api.openai.com/v1/chat/completions', {
+      model: 'gpt-3.5-turbo',
+      messages: [
+        { role: 'user', content: message }
+      ],
+      max_tokens: 150,
+      n: 1,
+      stop: null,
+      temperature: 0.5,
+    }, {
+      headers: {
+        'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`, // Bearer 토큰 사용
+        'Content-Type': 'application/json',
+      },
+    });
+
+    console.log('API response:', response.data.choices[0].message.content); // API 응답 로그
+    res.json({ response: response.data.choices[0].message.content });
+  } catch (error) {
+    console.error('Error:', error.response ? error.response.data : error.message);
+    res.status(500).json({ error: 'Something went wrong', details: error.message });
+  }
+});
 
 const PORT = 5000;
 app.listen(PORT, () => {

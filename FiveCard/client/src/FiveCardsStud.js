@@ -8,7 +8,7 @@ import { calculateHandRank, determineWinner, facemaker } from './pokerHands';
 import { aiDecision } from './Bot';
 
 function FiveCardsStud() {
-  
+ 
   const default_player_number = 3;
   const { isAuthenticated } = useAuth();
   const location = useLocation();
@@ -112,6 +112,23 @@ function FiveCardsStud() {
       setPlayerCount(location.state.playerCount);
     }
   }, [location.state]);
+
+  // const saving_function = async(money) => { // incomplete
+  //   const response = await fetch('http://localhost:5000/fivecardsstud', {
+  //     method: 'POST',
+  //     headers: {
+  //       'Content-Type': 'application/json',
+  //     },
+  //     body: JSON.stringify({ email, money }),
+  //   });
+  
+  //   const data = await response.json();
+  //   if (data.success) {
+  //     return null;
+  //   } else {
+  //     alert('Error has occured');
+  //   }
+  // }
 
   useEffect(() => {
     if (playerCount) {
@@ -261,11 +278,11 @@ function FiveCardsStud() {
       if (indicatorRef.current === 0){
         await waitForPlayerDecision();
       } else {
-        const dec = await aiDecision(indicatorRef.current, activePlayersRef.current, handsRef.current, handsRef.current.some(hand => hand.length === 5));
+        const dec = await aiDecision(indicatorRef.current, activePlayersRef.current, handsRef.current, moneysRef.current, potRef.current, handsRef.current.some(hand => hand.length === 5));
         console.log(dec);
-        if (dec.decision === 'call') {
+        if (dec.decision === 'Call') {
           await call(indicatorRef.current);
-        } else if (dec.decision === 'fold') {
+        } else if (dec.decision === 'Fold') {
           await fold(indicatorRef.current);
         } else {
           await raise(indicatorRef.current);
@@ -498,7 +515,9 @@ function FiveCardsStud() {
       <div className="circle">
         {renderBoxes()}
         <div className="button-container">
-          Betting Round : {betting_roundRef.current}, Pot: {potRef.current}
+          <div>Pot: {potRef.current}</div>
+          Bet {raisedRef.current-turnmoneymanageRef.current[0] <= moneysRef.current[0] ? raisedRef.current-turnmoneymanageRef.current[0] : moneysRef.current[0]} to {raisedRef.current-turnmoneymanageRef.current[0] === 0 ? "check" : "call"},
+          Bet {1.5*potRef.current} to raise.
           <button
             className={`btn btn-sm ${deckShuffled ? 'btn-primary' : 'btn-secondary'} shuffle-button`}
             onClick={shuffleCards}
