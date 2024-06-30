@@ -5,7 +5,7 @@ import { shuffle } from './utils'; // 섞기 함수 임포트
 import './FiveCardsStud.css'; // 스타일을 위한 CSS 파일 임포트
 import 'bootstrap/dist/css/bootstrap.min.css'; // 부트스트랩 CSS 임포트
 import { calculateHandRank, determineWinner, facemaker } from './pokerHands';
-import { aiDecision } from './Bot';
+import { aiDecisionStud, DecisionFBStud } from './Bot';
 
 function FiveCardsStud() {
  
@@ -35,7 +35,9 @@ function FiveCardsStud() {
   const [turn, setTurn] = useState(false);
   const [betting_round, setBetting_round] = useState(1);
   const [winner_index, setWinner_index] = useState(null);
+  const [playerchoice, setPlayerchoice] = useState(null);
 
+  const playerchoiceRef = useRef(playerchoice);
   const cardsDrawnRef = useRef(cardsDrawn);
   const showFifthCardRef = useRef(showFifthCard);
   const handsRef = useRef(hands);
@@ -138,6 +140,9 @@ function FiveCardsStud() {
       setHands(new Array(playerCount).fill([]));
       setMoneys(new Array(playerCount).fill(100000));
       setTurnmoneymanage(new Array(playerCount).fill(0));
+      drawPokerTable();
+      setExplanations(Array.from({ length: playerCount }, (_, i) => `해설 ${i + 1}`)); // 해설 개수를 변경할 수 있습니다.
+      explanationsRef.current = Array.from({ length: playerCount }, (_, i) => `해설 ${i + 1}`);
     }
   }, [playerCount]);
 
@@ -277,12 +282,27 @@ function FiveCardsStud() {
     while (playershouldbetRef.current.some(person => person === true) && activePlayersRef.current.filter(person => person === true).length > 1){
       if (indicatorRef.current === 0){
         await waitForPlayerDecision();
+        const dec = await DecisionFBStud(0, activePlayersRef.current, handsRef.current, moneysRef.current, potRef.current, handsRef.current.some(hand => hand.length === 5), playerchoiceRef.current);
+        const advice = "You should have done ".concat(dec.decision);
+        setExplanations(prevExplanation => {
+          const prevE = [...prevExplanation];
+          prevE[0] = advice;
+          explanationsRef.current = prevE;
+          return prevE;
+        })
       } else {
-        const dec = await aiDecision(indicatorRef.current, activePlayersRef.current, handsRef.current, moneysRef.current, potRef.current, handsRef.current.some(hand => hand.length === 5));
-        console.log(dec);
-        if (dec.decision === 'Call') {
+        const dec = await aiDecisionStud(indicatorRef.current, activePlayersRef.current, handsRef.current, moneysRef.current, potRef.current, handsRef.current.some(hand => hand.length === 5));
+        const deci = dec.decision.split('.')[0];
+        setExplanations(prevExplanation => {
+          const prevE = [...prevExplanation];
+          prevE[indicatorRef.current] = "Bot ".concat(indicatorRef.current).concat("'s rationale for the decision: ").concat(dec.decision);
+          explanationsRef.current = prevE;
+          return prevE;
+        })
+        console.log(dec.decision);
+        if (deci === 'Call') {
           await call(indicatorRef.current);
-        } else if (dec.decision === 'Fold') {
+        } else if (deci === 'Fold') {
           await fold(indicatorRef.current);
         } else {
           await raise(indicatorRef.current);
@@ -338,6 +358,12 @@ function FiveCardsStud() {
         return newPlayershouldbet;
       });
     }
+
+    if (indicatorRef.current === 0){
+      setPlayerchoice("fold");
+      playerchoiceRef.current = "fold";
+    }
+
     await duty();
     await inc_indicator();
   };
@@ -373,6 +399,11 @@ function FiveCardsStud() {
         playershouldbetRef.current = newPlayershouldbet;
         return newPlayershouldbet;
       });
+    }
+
+    if (indicatorRef.current === 0){
+      setPlayerchoice("call");
+      playerchoiceRef.current = "call";
     }
 
     await duty();
@@ -422,6 +453,11 @@ function FiveCardsStud() {
     } else {
       await call(playerIndex);
       console.log("player ", playerIndex, " called by raise. raised: ", raisedRef.current);
+    }
+
+    if (indicatorRef.current === 0){
+      setPlayerchoice("raise");
+      playerchoiceRef.current = "raise";
     }
   };
 
@@ -510,9 +546,27 @@ function FiveCardsStud() {
     return boxes;
   };
 
+  const canvasRef = useRef(null);
+  const [explanations, setExplanations] = useState([]);
+  const explanationsRef = useRef(explanations);
+
+  const drawPokerTable = () => {
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext('2d');
+    const centerX = canvas.width / 2;
+    const centerY = canvas.height / 2;
+    const radius = (Math.min(centerX, centerY) - 20);
+
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+    ctx.stroke();
+  };
+
   return (
-<div className="game-container">
-      <div className="circle">
+  <div className="container">
+    <div className="left-box">
+    <div className="canvas-container">
+      <canvas ref={canvasRef} width="600" height="600"></canvas>
         {renderBoxes()}
         <div className="button-container">
           <div>Pot: {potRef.current}</div>
@@ -556,8 +610,16 @@ function FiveCardsStud() {
             </button>
           </div>
         </div>
+        </div>
       </div>
+    <div className="right-box" style={{ gridTemplateRows: `repeat(${explanations.length}, 1fr)` }}>
+      {explanationsRef.current.map((explanation, index) => (
+        <div key={index} className="explanation-cell">
+          {explanation}
+        </div>
+      ))}
     </div>
+  </div>
   );
 }
 

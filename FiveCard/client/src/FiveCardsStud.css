@@ -71,4 +71,49 @@
     width: 60px; /* 각각의 버튼 너비를 Shuffle 버튼의 1/3로 설정 */
     margin: 0 5px; /* 버튼 간의 간격을 조정 */
   }
+
+/* new */
+
+  .body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+  }
+  
+  .container {
+    display: flex;
+    height: 100vh;
+  }
+  
+  .left-box {
+    flex: 2; /* 왼쪽 박스가 오른쪽 박스보다 30% 더 넓습니다. */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-right: 1px solid #000;
+  }
+  
+  .canvas-container {
+    position: relative;
+  }
+  
+  .canvas-container canvas {
+    display: block;
+  }
+  
+  
+  .right-box {
+    flex: 1; /* 오른쪽 박스의 기본 크기 설정 */
+    display: grid;
+    padding: 10px;
+  }
+  
+  .explanation-cell {
+    border: 1px solid #000;
+    margin: 5px;
+    padding: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: x-small;
+  }
   
