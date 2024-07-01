@@ -6,10 +6,11 @@ import './FiveCardsStud.css'; // 스타일을 위한 CSS 파일 임포트
 import 'bootstrap/dist/css/bootstrap.min.css'; // 부트스트랩 CSS 임포트
 import { calculateHandRank, determineWinner, facemaker } from './pokerHands';
 import { aiDecisionStud, DecisionFBStud } from './Bot';
+import marbleImage from './round-poker-table.svg';
 
 function FiveCardsStud() {
  
-  const default_player_number = 3;
+  const default_player_number = 5;
   const { isAuthenticated } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
@@ -36,6 +37,8 @@ function FiveCardsStud() {
   const [betting_round, setBetting_round] = useState(1);
   const [winner_index, setWinner_index] = useState(null);
   const [playerchoice, setPlayerchoice] = useState(null);
+  const [rightBoxVisible, setRightBoxVisible] = useState(true);
+  const [language, setLanguage] = useState("English");
 
   const playerchoiceRef = useRef(playerchoice);
   const cardsDrawnRef = useRef(cardsDrawn);
@@ -227,6 +230,14 @@ function FiveCardsStud() {
     } 
   }, [showFifthCard]);
 
+  const togglelanguage = () => {
+    if(language === "English"){
+      setLanguage("Korean");
+    } else {
+      setLanguage("English");
+    }
+  }
+
   const setPlayershouldbetfunc = async() => {
     const duty1 = async() => {
       setPlayershouldbet(prevPlayershouldbet => {
@@ -282,7 +293,7 @@ function FiveCardsStud() {
     while (playershouldbetRef.current.some(person => person === true) && activePlayersRef.current.filter(person => person === true).length > 1){
       if (indicatorRef.current === 0){
         await waitForPlayerDecision();
-        const dec = await DecisionFBStud(0, activePlayersRef.current, handsRef.current, moneysRef.current, potRef.current, handsRef.current.some(hand => hand.length === 5), playerchoiceRef.current);
+        const dec = await DecisionFBStud(0, activePlayersRef.current, handsRef.current, moneysRef.current, potRef.current, handsRef.current.some(hand => hand.length === 5), playerchoiceRef.current, language);
         const advice = "You should have done ".concat(dec.decision);
         setExplanations(prevExplanation => {
           const prevE = [...prevExplanation];
@@ -291,7 +302,7 @@ function FiveCardsStud() {
           return prevE;
         })
       } else {
-        const dec = await aiDecisionStud(indicatorRef.current, activePlayersRef.current, handsRef.current, moneysRef.current, potRef.current, handsRef.current.some(hand => hand.length === 5));
+        const dec = await aiDecisionStud(indicatorRef.current, activePlayersRef.current, handsRef.current, moneysRef.current, potRef.current, handsRef.current.some(hand => hand.length === 5), language);
         const deci = dec.decision.split('.')[0];
         setExplanations(prevExplanation => {
           const prevE = [...prevExplanation];
@@ -325,7 +336,7 @@ function FiveCardsStud() {
 
     const shuffled = shuffle(cardFiles); 
 
-    
+    setExplanations(Array.from({ length: playerCount }, (_, i) => `해설 ${i + 1}`));
     setWinner_index(null);
     setShuffledCards(shuffled);
     setDeckShuffled(true);
@@ -340,6 +351,7 @@ function FiveCardsStud() {
     setIs_first_operation(false);
     await change_indicator(0);
     setRaised(default_ante);
+
   };
 
   const fold = async (playerIndex) => {
@@ -524,8 +536,8 @@ function FiveCardsStud() {
         boxes.push(
           <div
             key={`Player-${i}`}
-            className={`btn btn-sm fold-button ${winner_indexRef.current == i ? 'btn-warning' : indicatorRef.current == i ? 'btn-primary' : !activePlayersRef.current[i] ? 'btn-secondary' : 'btn-outline-danger'}`}
-            style={{ left: `${x-6}%`, top: `${y - 11}%` }} // 원의 각 지점보다 약간 위에 둠
+            className={`btn btn-sm fold-button ${winner_indexRef.current == i ? 'btn-warning' : indicatorRef.current == i ? 'btn-danger' : !activePlayersRef.current[i] ? 'btn-secondary' : 'btn-primary'}`}
+            style={{ left: `${x-7}%`, top: `${y - 11}%` }} // 원의 각 지점보다 약간 위에 둠
           >
             Bot {i} : {moneysRef.current[i]}
           </div>
@@ -534,8 +546,8 @@ function FiveCardsStud() {
         boxes.push(
           <div
             key={`Player-${i}`}
-            className={`btn btn-sm fold-button ${winner_indexRef.current == i ? 'btn-warning' : indicatorRef.current == i ? 'btn-primary' : !activePlayersRef.current[i] ? 'btn-secondary' : 'btn-outline-danger'}`}
-            style={{ left: `${x-6}%`, top: `${y - 11}%` }} // 원의 각 지점보다 약간 위에 둠
+            className={`btn btn-sm fold-button ${winner_indexRef.current == i ? 'btn-warning' : indicatorRef.current == i ? 'btn-danger' : !activePlayersRef.current[i] ? 'btn-secondary' : 'btn-primary'}`}
+            style={{ left: `${x-7}%`, top: `${y - 11}%` }} // 원의 각 지점보다 약간 위에 둠
           >
             Player : {moneysRef.current[i]}
           </div>
@@ -557,14 +569,23 @@ function FiveCardsStud() {
     const centerY = canvas.height / 2;
     const radius = (Math.min(centerX, centerY) - 20);
 
-    ctx.beginPath();
-    ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
-    ctx.stroke();
+    const img = new Image();
+    img.src = marbleImage; // 도박 매트 이미지 경로
+    img.onload = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height); // 기존의 도형을 지웁니다.
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(centerX, centerY, radius * 2, 0, Math.PI * 2); // 원의 반지름을 두 배로 설정합니다.
+      ctx.clip();
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      ctx.restore();
+      ctx.stroke();
+    };
   };
 
   return (
   <div className="container">
-    <div className="left-box">
+    <div className={`left-box ${rightBoxVisible ? '' : 'centered'}`}>
     <div className="canvas-container">
       <canvas ref={canvasRef} width="600" height="600"></canvas>
         {renderBoxes()}
@@ -612,14 +633,22 @@ function FiveCardsStud() {
         </div>
         </div>
       </div>
-    <div className="right-box" style={{ gridTemplateRows: `repeat(${explanations.length}, 1fr)` }}>
-      {explanationsRef.current.map((explanation, index) => (
-        <div key={index} className="explanation-cell">
-          {explanation}
+      {rightBoxVisible && (
+        <div className="right-box" style={{ gridTemplateRows: `repeat(${explanations.length}, 1fr)` }}>
+          {explanations.map((explanation, index) => (
+            <div key={index} className={`${activePlayersRef.current[index] ? 'explanation-cell' : 'explanation-cell-folded'}`}>
+              {explanation}
+            </div>
+          ))}
         </div>
-      ))}
+      )}
+      <button onClick={() => setRightBoxVisible(!rightBoxVisible)} className={`btn ${rightBoxVisible ? 'btn-secondary' : 'btn-primary'}`} style={{ position: 'absolute', top: '10px', left: '10px' }}>
+        Trainer {rightBoxVisible ? 'Off' : 'On'}
+      </button>
+      <button onClick={() => togglelanguage()} className={`btn btn-primary`} style={{ position: 'absolute', top: '50px', left: '10px' }}>
+        {language === "English" ? '다음 판부터 한국어로 변경' : 'In English from next round'}
+      </button>
     </div>
-  </div>
   );
 }
 

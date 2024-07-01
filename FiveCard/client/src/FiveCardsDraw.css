@@ -1,62 +1,129 @@
 .game-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    position: relative;
-  }
-  
-  .circle {
-    width: 600px;
-    height: 600px;
-    border: 2px solid gray;
-    border-radius: 50%;
-    position: relative;
-  }
-  
-  .box {
-    width: 50px; /* 박스 크기 조정 */
-    height: 75px; /* 박스 크기 조정 */
-    position: absolute;
-    transform: translate(-50%, -50%);
-  }
-  
-  .card-slot {
-    width: 100%;
-    height: 100%;
-    background-color: transparent; /* 박스를 투명하게 만듭니다 */
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    overflow: hidden; /* 이미지가 넘치지 않도록 */
-  }
-  
-  .card-image {
-    width: 100%; /* 이미지를 박스 크기에 맞게 조정 */
-    height: auto; /* 비율을 유지하며 이미지 크기 조정 */
-  }
-  
-  .button-container {
-    position: absolute;
-    top: 45%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 10px;
-  }
-  
-  .shuffle-button,
-  .continue-button,
-  .open-button {
-    width: 100px; /* 버튼 너비를 동일하게 설정 */
-  }
-  
-  .fold-button {
-    position: absolute;
-    padding: 5px 10px;
-    font-size: 12px;
-    cursor: pointer;
-    z-index: 10; /* 버튼이 카드 위에 오도록 */
-  }
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  position: relative;
+}
+
+.circle {
+  width: 600px;
+  height: 600px;
+  border: 2px solid gray;
+  border-radius: 50%;
+  position: relative;
+}
+
+.box {
+  width: 50px; /* 박스 크기 조정 */
+  height: 75px; /* 박스 크기 조정 */
+  position: absolute;
+  transform: translate(-50%, -50%);
+}
+
+.card-slot {
+  width: 100%;
+  height: 100%;
+  background-color: transparent; /* 박스를 투명하게 만듭니다 */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden; /* 이미지가 넘치지 않도록 */
+}
+
+.card-image {
+  width: 100%; /* 이미지를 박스 크기에 맞게 조정 */
+  height: auto; /* 비율을 유지하며 이미지 크기 조정 */
+}
+
+.button-container {
+  position: absolute;
+  top: 45%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.shuffle-button,
+.continue-button,
+.open-button {
+  width: 200px; /* 버튼 너비를 동일하게 설정 */
+}
+
+.fold-button {
+  position: absolute;
+  padding: 5px 10px;
+  font-size: 12px;
+  cursor: pointer;
+  z-index: 10; /* 버튼이 카드 위에 오도록 */
+}
+
+.action-buttons {
+  display: flex;
+  justify-content: space-around;
+  width: 200px; /* 전체 버튼 컨테이너의 너비를 설정 */
+}
+
+.action-button {
+  width: 60px; /* 각각의 버튼 너비를 Shuffle 버튼의 1/3로 설정 */
+  margin: 0 5px; /* 버튼 간의 간격을 조정 */
+}
+
+/* new */
+
+.body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+}
+
+.container {
+  display: flex;
+  height: 100vh;
+}
+
+.left-box {
+  flex: 2; /* 왼쪽 박스가 오른쪽 박스보다 30% 더 넓습니다. */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-right: 1px solid #000;
+}
+
+.canvas-container {
+  position: relative;
+}
+
+.canvas-container canvas {
+  display: block;
+}
+
+
+.right-box {
+  flex: 1; /* 오른쪽 박스의 기본 크기 설정 */
+  display: grid;
+  padding: 10px;
+}
+
+.explanation-cell {
+  border: 1px solid #000;
+  margin: 5px;
+  padding: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: x-small;
+}
+
+.explanation-cell-folded {
+  border: 1px solid #6e6e6e;
+  margin: 5px;
+  padding: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: x-small;
+  background-color: #6e6e6e;
+}

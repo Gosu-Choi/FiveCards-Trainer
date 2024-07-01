@@ -98,6 +98,7 @@
   
   .canvas-container canvas {
     display: block;
+    background-image: '/table.jpg';
   }
   
   
@@ -117,3 +118,13 @@
     font-size: x-small;
   }
   
+  .explanation-cell-folded {
+    border: 1px solid #6e6e6e;
+    margin: 5px;
+    padding: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: x-small;
+    background-color: #6e6e6e;
+  }
