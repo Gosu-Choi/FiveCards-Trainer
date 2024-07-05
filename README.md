@@ -1,6 +1,6 @@
 # FiveCards Trainer
 
-「좋은 승부를 거는 것은 좋은 기회를 아는 것이다.」 그렇지만 그 좋은 기회를 잘 파악하는 사람이 되기 위해서는 어떻게 훈련해야 할까요? 
+「좋은 승부를 거는 것은 좋은 기회를 아는 것이다.」 포커에서의 격언이고 인생에서의 격언이기도 합니다. 그렇지만 그 좋은 기회를 잘 파악하는 사람이 되기 위해서는 어떻게 훈련해야 할까요? 
 The highest form of wisdom is knowing when to play and when to stay away.
 
 ## 서론
