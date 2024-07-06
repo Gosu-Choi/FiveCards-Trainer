@@ -1,30 +1,30 @@
 # FiveCards Trainer
 
-「좋은 승부를 거는 것은 좋은 기회를 아는 것이다.」 포커에서의 격언이고 인생에서의 격언이기도 합니다. 그렇지만 그 좋은 기회를 잘 파악하는 사람이 되기 위해서는 어떻게 훈련해야 할까요? 
-The highest form of wisdom is knowing when to play and when to stay away.
+The highest form of wisdom is knowing when to play and when to stay away. This is a quote for Poker gamers as well as for people who are living in their life. But How could we be the person who is able to distinguish those timings? That was the question what I started this project by.
 
-## 서론
+## Introduction
 
-본 프로젝트는 ① 불확실성 속에서 ② 연속된 의사결정을 ③ 반복적으로 해야 하는 상황에 처한 사용자의 판단 능력을 효과적으로 향상시킬 수 있는 트레이너를 구현하는 것을 목표로 합니다.
+The objective of this project is implementation of a trainer which can effectively improve the decision making capability of user who should make serial decisions repeatedly under uncertainty.
 
-이 세 가지 조건을 충족하는 상황은 매우 다양합니다. 실생활에서의 대표적인 예로는 '협상'이 있습니다. 일상적인 흥정에서부터 기업의 인수합병 협상까지 모두 불확실성 속에서 연속된 의사결정을 필요로 하며, 이러한 일들은 인생과 기업이 지속하는 한 반복적으로 발생합니다.
+It is so various that situations which satisfy these three conditions. In our reallife, "Negotiation" would be good example. From daily bargain to M&A by Enterprise, serial decision making under uncertainty should be needed and it will be repeated until demise.
 
-하지만 협상 등의 실생활 예시를 다루는 것이 궁극적인 목표임과 별개로 이를 시뮬레이션으로 구현해 컴퓨터 시스템과 연동되게끔 한 후 트레이너를 개발하는 것은 쉽지 않습니다. 따라서 프로젝트를 더 수월하게 진행하고 빠르게 실사례에 적용하기 위해 비교적 정리된 규칙을 가지고 있는 '게임'을 이용했고, 본 프로젝트에서는 이러한 조건을 만족하는 많은 게임 중 가장 단순한 '포커'를 선택했습니다.
+The ultimate goal would be to deal with these things like negotiations, which can be easily found in our life as far I mentioned. But it is difficult to establish simulation systems with computer so that it can be connected with controllable algorithm and to implement trainer. Thus, in this project 'game' has been utilized to progress this project as well and to find great insights applicable for our reallife quickly, due to the fact that games are standardized as well than the stuffs in reality. And finally 'Poker' has been selected among several games which satisfy three conditions.
 
-## 파이브 카드 트레이너: 게임 플레이 중 실시간 의사결정 피드백
+## FiveCards Trainer: realtime decision making feedback during gameplay
 
-포커의 핵심 규칙은 패의 서열을 나타내는 '족보'를 비롯해 꽤나 복잡하지만, 플레이어가 조작할 수 있는 것은 매 라운드 단 3가지 밖에 없습니다. 플레이어는 해당 판의 승리를 포기하거나 (Fold), 판돈을 올리거나 (Raise), 다른 플레이어가 낸 판돈 만큼의 돈을 똑같이 걸어 승부를 보거나 (Call) 입니다. 셋 중 초보 포커 플레이어들에게 가장 복잡하게 여겨지는 것은 Raise 입니다. 초보 포커 플레이어는 언제 Raise를 해야하는지, 상대방의 Raise에 어떻게 대응해야하는지 잘 모르기 때문입니다.
+The main rules of poker is quite difficult including the hand-ranking which indicates who's hand is superior, but the thing which the players can do is one of three. Player only can fold (giving that game up) or raise (raising the pot) or call (accept to continue the game) for a game. Among these three, it is raise that the most of beginners has been perplexed by. Because it is hard to distinguish when they should raise and what they should do to counter the raise by opponent.
 
-많은 포커 플레이어들은 10판 중 1판, 혹은 매 판 한 번씩은 Raise를 합니다. 하지만 실제로 Raise가 유리하게 작용하는 경우는 드뭅니다. 대부분의 베팅 룰에서 Raise를 할 때는 현재 판돈 이상을 추가로 걸어야 하고, 이는 큰 부담이 되기 때문입니다. 이 데이터는 많은 플레이어가 사실 Raise를 하면 안 되는 상황에서 Raise를 하고 있음을 시사합니다.
+Many poker players do raise one game per ten game or even once a round in terms of frequency. But it is so rare that the raise performs good effects for the player. Because doing raise is very big burden for the table money of the player because most of betting rules player should bet more than the present pot. So the numerical data which I mentioned above implies that many players do raise under the situation where they must not raise in fact. 
 
-웬만하면 Raise를 해서는 안 된다면, 그러면 언제 Raise를 해야 할까요? 가장 대표적인 경우는 (절대 흔하지 않지만) 5장 중 한 장만을 히든으로 가지는 파이브 카드 스터드에서, 본인은 액면 K 트리플을 가지고 있고 상대는 액면 J 포카드를 가지고 있으며, 2번 이상의 베팅 기회가 남아있으며 상대방은 2번의 Raise에 모두 응할 시 올인을 하게되는 상황입니다. 합리성을 가정하면 상대는 제가 Raise 할 때 Fold 할 수 밖에 없습니다. 만약 지면 다음 판에 참여해 복구할 수 있는 기회를 잃기 때문입니다. 상대 입장에서는 자신의 패가 잘 나타나 주었지만 상대의 패 때문에 Fold를 해야하는 상황인 것입니다.
+If the players must not raise under most of all situation, then when should we do raise? The most representative case is that (It is really rare) in five-card-stud where players have only one hidden card among five cards, the player has visual K triple and the opponent has visual J four-card, and more than two betting chance has remained, and if opponent call for all of the raise by those chances, then opponent bet all of his or her table money. If rationality is assumed then opponent must fold when the player raise for the first chance. Because he will lost all of the table money and he will lost chance for participating next game to make it up. So from the opponent's perspective, his or her hand is good but it should be folded because opponent's hand is lethal.
 
-이처럼 Raise 여부는 다른 플레이어의 패, 각 베팅 페이즈마다 얼마만큼의 돈이 걸렸는지, 현재 각 플레이어에게 남은 테이블 머니가 얼마인지 등을 고려해 결정해야 합니다. 물론 이 모든 것을 계산적으로 고려하기는 어렵습니다. 시간 제한도 있고, 노련한 플레이어들은 상대방의 고민하는 시간도 데이터로 삼아 패를 추정하기 때문입니다. 결국 자신만의 기준을 만들고 반복 숙달해 체화해야 합니다.
+As I explained, whether a player should raise should be determined by several elements like the hands of other players, how much money betted in each betting phases and how much table money remained for each players. Sure, it is too difficult to determine it accurately like a computer. Because there time limit also exists and proficient players can utilize the time length I considered to estimate my hand with it. So the decision making process is not able to be standardized, it should be embodied.
 
-본 프로젝트에서 개발한 Trainer는 이 부분에서 플레이어에게 도움을 제공하며 플레이어가 데이터에 기반한 감을 날카롭게 다듬을 수 있게 돕습니다. 플레이어가 실제로 봇과 게임을 해보면서, 직전의 의사결정은 어떤 관점에서 무모한지 또는 우둔한지 확률에 기반해 구체적으로 피드백 받을 수 있으며, 자신이 고려하지 못한 경우의 수를 제공받아 자신의 판단이 경솔했음을 확인할 수 있습니다. 또한 봇의 의사결정 근거를 확인하며 많은 경우를 학습하고 빠르게 성장할 수 있습니다.
+The trainer developed in this project can provide help to players on this context. It helps players to make their intuition based on the data sharp. As players actually play with bots, the previous decision can be specifically fed back based on the probability of being reckless or unintelligent, and by receiving a number of cases they did not consider, they can confirm that their judgment was rash. They can also learn and grow quickly by many cases which can be checked in the bot's decision-making rationales.
 
-## 적용한 포커 규칙 등 세부 사항
-본 프로젝트는 파이브 카드 스터드와 파이브 카드 드로우 룰을 따릅니다. 포커는 룰에 따라 변종이 다양합니다. 세븐 포커나 홀덤 등 일반적으로 즐겨지는 게임도 구현할 수 있었으나, 구현 과정에서의 편의와 Trainer가 과도하게 복잡한 전략을 고려하느라 적절한 피드백을 제공하지 못하는 것을 방지하기 위해 가장 단순한 버전의 게임 룰을 선정하였습니다. 봇과 트레이너는 ChatGPT API(GPT-4o)로 구현되었습니다.
+## Details including poker rules
 
-## 사용 기술 스택
+This project follows five-card studs and five-card draw rules. While commonly enjoyed games such as Seven Poker and Holdem could also be implemented, the simplest version of the game rules was selected to ensure ease in implementation and to prevent trainers from failing to provide adequate feedback due to over-complicated strategies. Bots and trainers are implemented with ChatGPT API (GPT-4o).
+
+## Technologies Used
 Frontend: React / Backend: Express, Prisma, MySQL
