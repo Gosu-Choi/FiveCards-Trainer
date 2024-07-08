@@ -1,7 +1,7 @@
 import { calculateHandRank, determineWinner, facemaker } from './pokerHands';
 
 const handleSendMessage = async (message) => {
-  const res = await fetch('http://localhost:5000/api/bot-communication', { 
+  const res = await fetch('/api/bot-communication', { 
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
