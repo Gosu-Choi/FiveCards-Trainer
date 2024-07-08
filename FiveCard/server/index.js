@@ -12,7 +12,7 @@ const prisma = new PrismaClient();
 app.use(cors());
 app.use(bodyParser.json());
 
-app.post('/login', async (req, res) => {
+app.post('/api/login', async (req, res) => {
   const { email, password } = req.body;
   const user = await prisma.user.findUnique({ where: { email } });
 
@@ -23,7 +23,7 @@ app.post('/login', async (req, res) => {
   }
 });
 
-app.post('/signup', async (req, res) => {
+app.post('/api/signup', async (req, res) => {
   const { email, password, name } = req.body;
   const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -42,7 +42,7 @@ app.post('/signup', async (req, res) => {
   }
 });
 
-app.post('/bot-communication', async (req, res) => {
+app.post('/api/bot-communication', async (req, res) => {
   const { message } = req.body;
   console.log("Received message:", message); // 요청 수신 시 로그
 
