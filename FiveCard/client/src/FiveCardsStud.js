@@ -293,7 +293,7 @@ function FiveCardsStud() {
     while (playershouldbetRef.current.some(person => person === true) && activePlayersRef.current.filter(person => person === true).length > 1){
       if (indicatorRef.current === 0){
         await waitForPlayerDecision();
-        const dec = await DecisionFBStud(0, activePlayersRef.current, handsRef.current, moneysRef.current, potRef.current, handsRef.current.some(hand => hand.length === 5), playerchoiceRef.current, language);
+        const dec = await DecisionFBStud(0, activePlayersRef.current, handsRef.current, moneysRef.current, potRef.current, handsRef.current.some(hand => hand.length === 5), playerchoiceRef.current, raisedRef.current, language);
         const advice = "You should have done ".concat(dec.decision);
         setExplanations(prevExplanation => {
           const prevE = [...prevExplanation];
@@ -302,7 +302,7 @@ function FiveCardsStud() {
           return prevE;
         })
       } else {
-        const dec = await aiDecisionStud(indicatorRef.current, activePlayersRef.current, handsRef.current, moneysRef.current, potRef.current, handsRef.current.some(hand => hand.length === 5), language);
+        const dec = await aiDecisionStud(indicatorRef.current, activePlayersRef.current, handsRef.current, moneysRef.current, potRef.current, handsRef.current.some(hand => hand.length === 5), raisedRef.current, language);
         const deci = dec.decision.split('.')[0];
         setExplanations(prevExplanation => {
           const prevE = [...prevExplanation];

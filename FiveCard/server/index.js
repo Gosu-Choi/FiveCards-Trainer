@@ -4,6 +4,7 @@ const cors = require('cors');
 const { PrismaClient } = require('@prisma/client');
 const bcrypt = require('bcryptjs');
 const axios = require('axios');
+const path = require('path');
 
 const app = express();
 const prisma = new PrismaClient();
@@ -69,6 +70,12 @@ app.post('/bot-communication', async (req, res) => {
     res.status(500).json({ error: 'Something went wrong', details: error.message });
   }
 });
+
+// 정적 파일 제공 경로 설정
+const clientBuildPath = path.join(__dirname, 'client/build');
+app.use(express.static(clientBuildPath));
+
+
 
 const PORT = 5000;
 app.listen(PORT, () => {

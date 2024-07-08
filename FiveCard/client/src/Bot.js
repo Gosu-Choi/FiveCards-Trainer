@@ -13,7 +13,7 @@ const handleSendMessage = async (message) => {
 }
 // For FiveCardsStud
 
-const aiDecisionStud = async (indicator, survivor, hands, money, pot, is_final, languageset) => {
+const aiDecisionStud = async (indicator, survivor, hands, money, pot, is_final, raised, languageset) => {
   if (money[indicator] === 0){
     const decision = "Call.";
     return new Promise((resolve) => {
@@ -28,8 +28,8 @@ const aiDecisionStud = async (indicator, survivor, hands, money, pot, is_final, 
         mention = mention.concat("Player ").concat(i).concat("'s hand is ").concat(facemaker(turner(hands))[i]).concat(" and one card is hidden. So the rank of his visual hand is ").concat(calculateHandRank(facemaker(hands)[i], true).hand).concat(" And this player has ").concat(money[i]).concat(" as table money. ");
       }
     }
-    mention = mention.concat(" Would you call or fold or raise? Just answer with simple one word with mark so like 'Fold.' or 'Raise.' or 'Call.'. One thing, if you want to raise, you should bet 1.5 times of the pot. Now the pot money is ").concat(pot).concat(". And please RECHECK YOUR HANDS. In many cases, people overestimate their hands.");
-    mention = mention.concat(" You should win this game. If you lose all money then you will lost everything. So you should use all of the strategy available and all the environment including enemies' hands and table moneys. And after give me your decision like 'Fold.' or 'Raise.' or 'Call.', give me your rationale and strategy why you make that decision for 3-4 simple ").concat(languageset).concat(" sentences without any special marks.");
+    mention = mention.concat(" And you should be aware of that players can do bluffing. Would you call or fold or raise? Just answer with simple one word with mark so like 'Fold.' or 'Raise.' or 'Call.'. If you want to raise, you should bet 1.5 times of the pot. Now the pot money is ").concat(pot).concat(". If you want to call, you should bet ").concat(raised).concat(". And please RECHECK YOUR HANDS. In many cases, people overestimate their hands.");
+    mention = mention.concat(" You should win this game. If you lose all money then you will lost everything. So you should use all of the strategy available and all the environment including enemies' hands and table moneys. And after give me your decision like 'Fold.' or 'Raise.' or 'Call.', give me your rationale and strategy why you make that decision for 3-4 simple ").concat(languageset).concat(" sentences including numerical calculation like win probability of the rank as long as it is not too complex (e.g. 'win probability of ~ hand is commonly ~% in five card stud', without any special marks. Remember, don't say meaningless mention because you cannot say many words.");
     if (is_final) {
       mention = mention.concat(" And this is final phase of betting, you are not able to receive additional card and You are not able to find any additional potential for your hands.");
     }
@@ -42,15 +42,15 @@ const aiDecisionStud = async (indicator, survivor, hands, money, pot, is_final, 
   }
 };
 
-const DecisionFBStud = async (indicator, survivor, hands, money, pot, is_final, my_choice, languageset) => {
+const DecisionFBStud = async (indicator, survivor, hands, money, pot, is_final, my_choice, raised, languageset) => {
   let mention = "I am playing FIVE CARDS STUD. I am not able to have more than five cards. Here started new game. My hand is ".concat(facemaker(turner(hands))[indicator]).concat(". And my first card, ").concat(hands[indicator][0]).concat(" is hidden. So the rank of my hand is ").concat(calculateHandRank(hands[indicator], false).hand).concat(" And I have ").concat(money[indicator]).concat(" as table money. Other players' hands are following. ");
   for (let i = 0; i<survivor.length; i++){
     if(survivor[i] && i !== indicator){
       mention = mention.concat("Player ").concat(i).concat("'s hand is ").concat(facemaker(turner(hands))[i]).concat(" and one card is hidden. So the rank of his visual hand is ").concat(calculateHandRank(facemaker(hands)[i], true).hand).concat(" And this player has ").concat(money[i]).concat(" as table money. ");
     }
   }
-  mention = mention.concat("I chose to ").concat(my_choice).concat(". How do you feedback for my decision? If you were I, What would you do call or fold or raise? First, just answer with simple one word like 'Fold.' or 'Raise.' or 'Call.'. And please give me very practical idea of you with all five poker strategy even from internet for 3-4 simple ").concat(languageset).concat(" sentences. One thing, if you want to raise, you should bet 1.5 times of the pot. Now the pot money is ").concat(pot).concat(". And please RECHECK YOUR HANDS. In many cases, people overestimate their hands.");
-  mention = mention.concat(" I must win this game. And you should use all of the five poker strategy available and all the environment including enemies' hands and table moneys for 3-4 simple sentences.");
+  mention = mention.concat("I chose to ").concat(my_choice).concat(". How do you feedback for my decision? If you were I, What would you do call or fold or raise? And you should be aware of that players can do bluffing. First, just answer with simple one word like 'Fold.' or 'Raise.' or 'Call.'. And please give me very practical idea for 3-4 simple ").concat(languageset).concat(" sentences including numerical calculation like win probability of the rank as long as it is not too complex without any special mark (e.g. 'win probability of ~ hand is commonly ~% in five card stud'). Remember, don't say meaningless mention because you cannot say many words. If you want to raise, you should bet 1.5 times of the pot. Now the pot money is ").concat(pot).concat(". If you want to call, you should bet ").concat(raised).concat(". And please RECHECK YOUR HANDS. In many cases, people overestimate their hands.");
+  mention = mention.concat(" I must win this game. And you should use all of the five poker strategy available and all the environment including enemies' hands and table moneys.");
   if (is_final) {
     mention = mention.concat(" And this is final phase of betting, I was not able to receive additional card and I was not able to find any additional potential for my hands.");
   }
@@ -64,7 +64,7 @@ const DecisionFBStud = async (indicator, survivor, hands, money, pot, is_final, 
 
 // For FiveCardsDraw
 
-const aiDecisionDraw = async (indicator, survivor, hands, money, pot, is_final, languageset) => {
+const aiDecisionDraw = async (indicator, survivor, hands, money, pot, is_final, raised, languageset) => {
   if (money[indicator] === 0){
     const decision = "Call.";
     return new Promise((resolve) => {
@@ -79,8 +79,8 @@ const aiDecisionDraw = async (indicator, survivor, hands, money, pot, is_final, 
         mention = mention.concat("Player ").concat(i).concat(" has ").concat(money[i]).concat(" as table money. ");
       }
     }
-    mention = mention.concat(" Would you call or fold or raise? Just answer with simple one word with mark so like 'Fold.' or 'Raise.' or 'Call.'. One thing, if you want to raise, you should bet 1.5 times of the pot. Now the pot money is ").concat(pot).concat(". And please RECHECK YOUR HANDS. In many cases, people overestimate their hands.");
-    mention = mention.concat(" You should win this game. If you lose all money then you will lost everything. So you should use all of the strategy available and all the environment including enemies' hands and table moneys. And after give me your decision like 'Fold.' or 'Raise.' or 'Call.', give me your rationale and strategy why you make that decision for 3-4 simple ").concat(languageset).concat(" sentences without any special marks..");
+    mention = mention.concat(" And you should be aware of that players can do bluffing. Would you call or fold or raise? Just answer with simple one word with mark so like 'Fold.' or 'Raise.' or 'Call.'. If you want to raise, you should bet 1.5 times of the pot. Now the pot money is ").concat(pot).concat(". If you want to call, you should bet ").concat(raised).concat(". And please RECHECK YOUR HANDS. In many cases, people overestimate their hands.");
+    mention = mention.concat(" You should win this game. If you lose all money then you will lost everything. So you should use all of the strategy available and all the environment including enemies' hands and table moneys. And after give me your decision like 'Fold.' or 'Raise.' or 'Call.', give me your rationale and strategy why you make that decision for 3-4 simple ").concat(languageset).concat(" sentences including numerical calculation like win probability of the rank as long as it is not too complex, without any special marks. (e.g. 'win probability of ~ hand is commonly ~% in five card stud') Remember, don't say meaningless mention because you cannot say many words.");
     if (is_final) {
       mention = mention.concat(" And this is final phase of betting, you are not able to receive additional card and You are not able to find any additional potential for your hands.");
     }
@@ -93,14 +93,14 @@ const aiDecisionDraw = async (indicator, survivor, hands, money, pot, is_final, 
   }
 };
 
-const DecisionFBDraw = async (indicator, survivor, hands, money, pot, is_final, my_choice, languageset) => {
+const DecisionFBDraw = async (indicator, survivor, hands, money, pot, is_final, my_choice, raised, languageset) => {
   let mention = "I am playing FIVE CARDS STUD. I am not able to have more than five cards and I am not able to have same cards if you conceive so, then you are misunderstanding my hand, so recheck it. Here started new game. My hand is ".concat(turner(hands)[indicator]).concat(". And all of my card is hidden. So the rank of your hand is ").concat(calculateHandRank(hands[indicator], false).hand).concat(" And I have ").concat(money[indicator]).concat(" as table money. Other players' table moneys are following. ");
   for (let i = 0; i<survivor.length; i++){
     if(survivor[i] && i !== indicator){
       mention = mention.concat("Player ").concat(i).concat(" has ").concat(money[i]).concat(" as table money. ");
     }
   }
-  mention = mention.concat("I chose to ").concat(my_choice).concat(". How do you feedback for my decision? If you were I, What would you do call or fold or raise? First, just answer with simple one word like 'Fold.' or 'Raise.' or 'Call.'. And please give me very critical idea of you with all five poker strategy even from internet for 3-4 simple ").concat(languageset).concat(" sentences without any special marks. One thing, if you want to raise, you should bet 1.5 times of the pot. Now the pot money is ").concat(pot).concat(". And please RECHECK YOUR HANDS. In many cases, people overestimate their hands.");
+  mention = mention.concat("I chose to ").concat(my_choice).concat(". How do you feedback for my decision? If you were I, What would you do call or fold or raise? And you should be aware of that players can do bluffing. First, just answer with simple one word like 'Fold.' or 'Raise.' or 'Call.'. And please give me very practical idea for 3-4 simple ").concat(languageset).concat(" sentences including numerical calculation like win probability of the rank as long as it is not too complex, without any special marks (e.g. 'win probability of ~ hand is commonly ~% in five card stud'). Remember, don't say meaningless mention because you cannot say many words. If you want to raise, you should bet 1.5 times of the pot. Now the pot money is ").concat(pot).concat(". If you want to call, you should bet ").concat(raised).concat(". And please RECHECK YOUR HANDS. In many cases, people overestimate their hands.");
   mention = mention.concat(" I must win this game. And you should use all of the five poker strategy available and all the environment including enemies' hands and table moneys.");
   if (is_final) {
     mention = mention.concat(" And this is final phase of betting, I was not able to receive additional card and I was not able to find any additional potential for my hands.");
