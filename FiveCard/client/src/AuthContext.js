@@ -5,6 +5,7 @@ const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [useremail, setUseremail] = useState('');
 
   useEffect(() => {
     // 컴포넌트가 마운트될 때 localStorage에서 로그인 상태를 확인
@@ -15,8 +16,9 @@ export const AuthProvider = ({ children }) => {
     setLoading(false);
   }, []);
 
-  const login = () => {
+  const login = (email) => {
     setIsAuthenticated(true);
+    setUseremail(email);
     localStorage.setItem('isAuthenticated', 'true'); // 로그인 상태를 localStorage에 저장
     console.log('Logged in'); // 디버깅 로그
   };
@@ -28,7 +30,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, loading, login, logout }}>
+    <AuthContext.Provider value={{ isAuthenticated, loading, login, logout, useremail }}>
       {children}
     </AuthContext.Provider>
   );

@@ -11,7 +11,6 @@ import marbleImage from './round-poker-table.svg';
 function FiveCardsStud() {
  
   const default_player_number = 5;
-  const { isAuthenticated } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
   const [playerCount, setPlayerCount] = useState(default_player_number);
@@ -39,6 +38,8 @@ function FiveCardsStud() {
   const [playerchoice, setPlayerchoice] = useState(null);
   const [rightBoxVisible, setRightBoxVisible] = useState(true);
   const [language, setLanguage] = useState("English");
+
+  const { useremail, login, logout, isAuthenticated } = useAuth();
 
   const playerchoiceRef = useRef(playerchoice);
   const cardsDrawnRef = useRef(cardsDrawn);
@@ -236,6 +237,28 @@ function FiveCardsStud() {
     } else {
       setLanguage("English");
     }
+  }
+
+  const loggingout = () => {
+    logout();
+    navigate('/login');
+  }
+
+  const savemoney = async (email, money) => {
+      const response = await fetch('http://localhost:5000/api/save', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, money }),
+      });
+  
+      const data = await response.json();
+      if (data.success) {
+        alert('Success.'); // 회원가입 성공 시 로그인 페이지로 이동
+      } else {
+        alert(data.message || 'Save failed'); // 서버에서 전송된 오류 메시지 출력
+      }
   }
 
   const setPlayershouldbetfunc = async() => {
@@ -632,6 +655,15 @@ function FiveCardsStud() {
           </div>
         </div>
         </div>
+        <button onClick={() => savemoney(useremail, moneysRef.current[0])} className={`btn btn-primary`} style={{ position: 'absolute', top: '50px', right: '10px' }}>
+        Money Save
+        </button>
+        <button onClick={loggingout} className={`btn btn-primary`} style={{ position: 'absolute', top: '10px', right: '10px' }}>
+        Log Out
+        </button>
+        <button onClick={() => savemoney(useremail, 100000)} className={`btn btn-primary`} style={{ position: 'absolute', top: '90px', right: '10px' }}>
+        Money Reset
+        </button>
       </div>
       {rightBoxVisible && (
         <div className="right-box" style={{ gridTemplateRows: `repeat(${explanations.length}, 1fr)` }}>
@@ -646,7 +678,7 @@ function FiveCardsStud() {
         Trainer {rightBoxVisible ? 'Off' : 'On'}
       </button>
       <button onClick={() => togglelanguage()} className={`btn btn-primary`} style={{ position: 'absolute', top: '50px', left: '10px' }}>
-        {language === "English" ? '다음 판부터 한국어로 변경' : 'In English from next round'}
+        {language === "English" ? '한국어로 변경' : 'In English'}
       </button>
     </div>
   );

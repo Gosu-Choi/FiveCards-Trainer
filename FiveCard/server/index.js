@@ -62,19 +62,29 @@ app.post('/api/bot-communication', async (req, res) => {
         'Content-Type': 'application/json',
       },
     });
-
-    console.log('API response:', response.data.choices[0].message.content); // API 응답 로그
     res.json({ response: response.data.choices[0].message.content });
   } catch (error) {
-    console.error('Error:', error.response ? error.response.data : error.message);
     res.status(500).json({ error: 'Something went wrong', details: error.message });
+  }
+});
+
+app.post('/api/save', async (req, res) => {
+  const { email, money } = req.body;
+
+  try {
+    const user = await prisma.user.update({
+      where: { email: email },
+      data: { money: money },
+    });
+    res.status(200).json({ success: true, user });
+  } catch (error) {
+    res.status(400).json({ success: false, message: error.message });
   }
 });
 
 // 정적 파일 제공 경로 설정
 const clientBuildPath = path.join(__dirname, 'client/build');
 app.use(express.static(clientBuildPath));
-
 
 const PORT = 5000;
 app.listen(PORT, () => {
