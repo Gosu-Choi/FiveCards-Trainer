@@ -39,7 +39,7 @@ function FiveCardsStud() {
   const [rightBoxVisible, setRightBoxVisible] = useState(true);
   const [language, setLanguage] = useState("English");
 
-  const { useremail, login, logout, isAuthenticated } = useAuth();
+  const { useremail, login, logout, isAuthenticated, playerMoney } = useAuth();
 
   const playerchoiceRef = useRef(playerchoice);
   const cardsDrawnRef = useRef(cardsDrawn);
@@ -143,6 +143,12 @@ function FiveCardsStud() {
       setCardsDrawn(new Array(playerCount).fill(0));
       setHands(new Array(playerCount).fill([]));
       setMoneys(new Array(playerCount).fill(100000));
+      setMoneys(prevMoneys => {
+        const newMoney = [...prevMoneys];
+        newMoney[0] = playerMoney;
+        moneysRef.current = newMoney;
+        return newMoney;
+      });
       setTurnmoneymanage(new Array(playerCount).fill(0));
       drawPokerTable();
       setExplanations(Array.from({ length: playerCount }, (_, i) => `해설 ${i + 1}`)); // 해설 개수를 변경할 수 있습니다.

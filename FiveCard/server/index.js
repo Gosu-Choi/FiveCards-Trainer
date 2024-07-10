@@ -17,7 +17,7 @@ app.post('/api/login', async (req, res) => {
   const user = await prisma.user.findUnique({ where: { email } });
 
   if (user && await bcrypt.compare(password, user.password)) {
-    res.json({ success: true });
+    res.json({ success: true, money: user.money });
   } else {
     res.json({ success: false });
   }
