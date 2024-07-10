@@ -247,7 +247,6 @@ function FiveCardsStud() {
   }
 
   const savemoney = async (email, money) => {
-    console.log(email);
     const response = await fetch('/api/save', {
       method: 'POST',
       headers: {
@@ -337,12 +336,12 @@ function FiveCardsStud() {
           explanationsRef.current = prevE;
           return prevE;
         })
-        if (deci === 'Call') {
-          await call(indicatorRef.current);
+        if (deci === 'Raise') {
+          await raise(indicatorRef.current);
         } else if (deci === 'Fold') {
           await fold(indicatorRef.current);
         } else {
-          await raise(indicatorRef.current);
+          await call(indicatorRef.current);;
         }
       }
     }

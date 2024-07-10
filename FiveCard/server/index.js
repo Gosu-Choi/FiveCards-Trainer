@@ -69,12 +69,12 @@ app.post('/api/bot-communication', async (req, res) => {
 });
 
 app.post('/api/save', async (req, res) => {
-  const { email, plmoney } = req.body;
+  const { email, money } = req.body;
 
   try {
     const user = await prisma.user.update({
       where: { email: email },
-      data: { money: plmoney },
+      data: { money: money },
     });
     res.status(200).json({ success: true, user });
   } catch (error) {

@@ -654,10 +654,10 @@ function FiveCardsDraw() {
           </div>
         </div>
         </div>
-        <button onClick={() => savemoney(useremail, moneysRef.current[0])} className={`btn btn-primary`} style={{ position: 'absolute', bottom: '50px', left: '10px' }}>
+        <button onClick={() => savemoney(useremail, moneysRef.current[0])} className={`btn btn-primary`} style={{ position: 'absolute', bottom: '10px', left: '10px' }}>
         Money Save
         </button>
-        <button onClick={loggingout} className={`btn btn-primary`} style={{ position: 'absolute', bottom: '10px', left: '10px' }}>
+        <button onClick={loggingout} className={`btn btn-primary`} style={{ position: 'absolute', bottom: '50px', left: '10px' }}>
         Log Out
         </button>
         <button onClick={() => savemoney(useremail, 100000)} className={`btn btn-primary`} style={{ position: 'absolute', bottom: '90px', left: '10px' }}>
