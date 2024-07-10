@@ -9,7 +9,12 @@ const handleSendMessage = async (message) => {
       body: JSON.stringify({ message })
     });
   const data = await res.json();
-  return data.response
+  if (res.status === 500){
+    return data.details;
+  } else {
+    return data.response;
+  }
+  
 }
 // For FiveCardsStud
 

@@ -39,7 +39,7 @@ function FiveCardsStud() {
   const [rightBoxVisible, setRightBoxVisible] = useState(true);
   const [language, setLanguage] = useState("English");
 
-  const { useremail, login, logout, isAuthenticated, playerMoney } = useAuth();
+  const { useremail, login, logout, isAuthenticated, playerMoney, refreshmoney } = useAuth();
 
   const playerchoiceRef = useRef(playerchoice);
   const cardsDrawnRef = useRef(cardsDrawn);
@@ -181,15 +181,12 @@ function FiveCardsStud() {
 
   useEffect(() => {
     gamestartedRef.current = gamestarted;
-    console.log("game started");
     if (gamestartedRef.current) {
       const gameLoop = async () => {
-        console.log("game started again");
         setBetting_round(1);
         betting_roundRef.current = 1;
         while (activePlayersRef.current.filter(person => person === true).length > 1 && betting_roundRef.current < 5) { // 조정 필요. open 버튼 로직에도 개입함
           await drawCards();
-          console.log(handsRef.current, facemaker(handsRef.current)); 
           await change_indicator(determineWinner(facemaker(handsRef.current), activePlayersRef.current, true));
           await setPlayershouldbetfunc();
           await handleBettingRound();
@@ -200,7 +197,6 @@ function FiveCardsStud() {
           setGamestarted(false);
           gamestartedRef.current = false;
           const winner = determineWinner(handsRef.current, activePlayersRef.current, false);
-          console.log(calculateHandRank(handsRef.current[winner], false));
           setWinner_index(winner);
           winner_indexRef.current = winner;
           setMoneys(prevMoneys => {
@@ -251,20 +247,22 @@ function FiveCardsStud() {
   }
 
   const savemoney = async (email, money) => {
-      const response = await fetch('/api/save', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, money }),
-      });
-  
-      const data = await response.json();
-      if (data.success) {
-        alert('Success.'); // 회원가입 성공 시 로그인 페이지로 이동
-      } else {
-        alert(data.message || 'Save failed'); // 서버에서 전송된 오류 메시지 출력
-      }
+    console.log(email);
+    const response = await fetch('/api/save', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email, money }),
+    });
+    
+    const data = await response.json();
+    if (data.success) {
+      refreshmoney(money);
+      alert('Success.'); // 회원가입 성공 시 로그인 페이지로 이동
+    } else {
+      alert(data.message || 'Save failed'); // 서버에서 전송된 오류 메시지 출력
+    }
   }
 
   const setPlayershouldbetfunc = async() => {
@@ -339,7 +337,6 @@ function FiveCardsStud() {
           explanationsRef.current = prevE;
           return prevE;
         })
-        console.log(dec.decision);
         if (deci === 'Call') {
           await call(indicatorRef.current);
         } else if (deci === 'Fold') {
@@ -348,7 +345,6 @@ function FiveCardsStud() {
           await raise(indicatorRef.current);
         }
       }
-      console.log(playershouldbetRef.current);
     }
     setTurn(false);
   };
@@ -410,7 +406,6 @@ function FiveCardsStud() {
   };
 
   const call = async (playerIndex) => {
-    console.log("player ", playerIndex, " called");
     const moneyshouldpaid = raisedRef.current - turnmoneymanageRef.current[playerIndex];
     const newMoney = ( moneysRef.current[playerIndex] - moneyshouldpaid > 0 ? moneysRef.current[playerIndex] - moneyshouldpaid : 0 );
     const moneyPaid = ( moneysRef.current[playerIndex] - moneyshouldpaid > 0 ? moneyshouldpaid : moneysRef.current[playerIndex] );
@@ -485,15 +480,12 @@ function FiveCardsStud() {
       setRaised(potRef.current*1.5);
       raisedRef.current = potRef.current*1.5;
       await betduty(playerIndex);
-      console.log("player ", playerIndex, " raised. raised: ", raisedRef.current);
     } else if (moneysRef.current[playerIndex] > raisedRef.current) { //All-in
       setRaised(turnmoneymanageRef.current[playerIndex] + moneysRef.current[playerIndex]);
       raisedRef.current = turnmoneymanageRef.current[playerIndex] + moneysRef.current[playerIndex];
       await betduty(playerIndex);
-      console.log("player ", playerIndex, " all-in. raised: ", raisedRef.current);
     } else {
       await call(playerIndex);
-      console.log("player ", playerIndex, " called by raise. raised: ", raisedRef.current);
     }
 
     if (indicatorRef.current === 0){
@@ -511,7 +503,6 @@ function FiveCardsStud() {
         newHands[index] = newHand;
         setHands(newHands);
         handsRef.current = newHands;
-        console.log(handsRef.current);
         return cards + 1;
       }
       return cards;
