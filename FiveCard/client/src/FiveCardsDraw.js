@@ -39,7 +39,7 @@ function FiveCardsDraw() {
   const [rightBoxVisible, setRightBoxVisible] = useState(true);
   const [language, setLanguage] = useState("English");
 
-  const { useremail, login, logout, isAuthenticated } = useAuth();
+  const { useremail, login, logout, isAuthenticated, playerMoney, refreshmoney } = useAuth();
 
   const playerchoiceRef = useRef(playerchoice);
   const cardsDrawnRef = useRef(cardsDrawn);
@@ -120,7 +120,7 @@ function FiveCardsDraw() {
   }, [location.state]);
 
   // const saving_function = async(money) => { // incomplete
-  //   const response = await fetch('http://localhost:5000/fivecardsDraw', {
+  //   const response = await fetch('http://localhost:5000/fivecardsstud', {
   //     method: 'POST',
   //     headers: {
   //       'Content-Type': 'application/json',
@@ -143,6 +143,12 @@ function FiveCardsDraw() {
       setCardsDrawn(new Array(playerCount).fill(0));
       setHands(new Array(playerCount).fill([]));
       setMoneys(new Array(playerCount).fill(100000));
+      setMoneys(prevMoneys => {
+        const newMoney = [...prevMoneys];
+        newMoney[0] = playerMoney;
+        moneysRef.current = newMoney;
+        return newMoney;
+      });
       setTurnmoneymanage(new Array(playerCount).fill(0));
       drawPokerTable();
       setExplanations(Array.from({ length: playerCount }, (_, i) => `해설 ${i + 1}`)); // 해설 개수를 변경할 수 있습니다.
@@ -175,15 +181,12 @@ function FiveCardsDraw() {
 
   useEffect(() => {
     gamestartedRef.current = gamestarted;
-    console.log("game started");
     if (gamestartedRef.current) {
       const gameLoop = async () => {
-        console.log("game started again");
         setBetting_round(1);
         betting_roundRef.current = 1;
         while (activePlayersRef.current.filter(person => person === true).length > 1 && betting_roundRef.current < 5) { // 조정 필요. open 버튼 로직에도 개입함
           await drawCards();
-          console.log(handsRef.current, facemaker(handsRef.current)); 
           await change_indicator(determineWinner(facemaker(handsRef.current), activePlayersRef.current, true));
           await setPlayershouldbetfunc();
           await handleBettingRound();
@@ -194,7 +197,6 @@ function FiveCardsDraw() {
           setGamestarted(false);
           gamestartedRef.current = false;
           const winner = determineWinner(handsRef.current, activePlayersRef.current, false);
-          console.log(calculateHandRank(handsRef.current[winner], false));
           setWinner_index(winner);
           winner_indexRef.current = winner;
           setMoneys(prevMoneys => {
@@ -245,20 +247,21 @@ function FiveCardsDraw() {
   }
 
   const savemoney = async (email, money) => {
-      const response = await fetch('/api/save', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, money }),
-      });
-  
-      const data = await response.json();
-      if (data.success) {
-        alert('Success.'); // 회원가입 성공 시 로그인 페이지로 이동
-      } else {
-        alert(data.message || 'Save failed'); // 서버에서 전송된 오류 메시지 출력
-      }
+    const response = await fetch('/api/save', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email, money }),
+    });
+    
+    const data = await response.json();
+    if (data.success) {
+      refreshmoney(money);
+      alert('Success.'); // 회원가입 성공 시 로그인 페이지로 이동
+    } else {
+      alert(data.message || 'Save failed'); // 서버에서 전송된 오류 메시지 출력
+    }
   }
 
   const setPlayershouldbetfunc = async() => {
@@ -333,16 +336,14 @@ function FiveCardsDraw() {
           explanationsRef.current = prevE;
           return prevE;
         })
-        console.log(dec.decision);
-        if (deci === 'Call') {
-          await call(indicatorRef.current);
+        if (deci === 'Raise') {
+          await raise(indicatorRef.current);
         } else if (deci === 'Fold') {
           await fold(indicatorRef.current);
         } else {
-          await raise(indicatorRef.current);
+          await call(indicatorRef.current);;
         }
       }
-      console.log(playershouldbetRef.current);
     }
     setTurn(false);
   };
@@ -404,7 +405,6 @@ function FiveCardsDraw() {
   };
 
   const call = async (playerIndex) => {
-    console.log("player ", playerIndex, " called");
     const moneyshouldpaid = raisedRef.current - turnmoneymanageRef.current[playerIndex];
     const newMoney = ( moneysRef.current[playerIndex] - moneyshouldpaid > 0 ? moneysRef.current[playerIndex] - moneyshouldpaid : 0 );
     const moneyPaid = ( moneysRef.current[playerIndex] - moneyshouldpaid > 0 ? moneyshouldpaid : moneysRef.current[playerIndex] );
@@ -479,15 +479,12 @@ function FiveCardsDraw() {
       setRaised(potRef.current*1.5);
       raisedRef.current = potRef.current*1.5;
       await betduty(playerIndex);
-      console.log("player ", playerIndex, " raised. raised: ", raisedRef.current);
     } else if (moneysRef.current[playerIndex] > raisedRef.current) { //All-in
       setRaised(turnmoneymanageRef.current[playerIndex] + moneysRef.current[playerIndex]);
       raisedRef.current = turnmoneymanageRef.current[playerIndex] + moneysRef.current[playerIndex];
       await betduty(playerIndex);
-      console.log("player ", playerIndex, " all-in. raised: ", raisedRef.current);
     } else {
       await call(playerIndex);
-      console.log("player ", playerIndex, " called by raise. raised: ", raisedRef.current);
     }
 
     if (indicatorRef.current === 0){
@@ -505,7 +502,6 @@ function FiveCardsDraw() {
         newHands[index] = newHand;
         setHands(newHands);
         handsRef.current = newHands;
-        console.log(handsRef.current);
         return cards + 1;
       }
       return cards;
@@ -539,7 +535,7 @@ function FiveCardsDraw() {
         const boxX = x + 5 * (j - 2); // 가로로 배치, -2는 중앙 정렬을 위해
         let cardFilePath = `/cards/${shuffledCards[j + i * 5]}.svg`; // 무작위로 섞인 카드 파일 경로
 
-        if (i !== 0 && ((showFifthCard && !activePlayersRef.current[i]) || !showFifthCard)) {
+        if (i !== 0 && j === 0 && ((showFifthCard && !activePlayersRef.current[i]) || !showFifthCard)) {
           cardFilePath = `/cards/card_back.svg`;
         }
 
@@ -577,6 +573,7 @@ function FiveCardsDraw() {
         );
       }
     }
+
     return boxes;
   };
 
@@ -654,10 +651,10 @@ function FiveCardsDraw() {
           </div>
         </div>
         </div>
-        <button onClick={() => savemoney(useremail, moneysRef.current[0])} className={`btn btn-primary`} style={{ position: 'absolute', bottom: '10px', left: '10px' }}>
+        <button onClick={() => savemoney(useremail, moneysRef.current[0])} className={`btn btn-primary`} style={{ position: 'absolute', bottom: '50px', left: '10px' }}>
         Money Save
         </button>
-        <button onClick={loggingout} className={`btn btn-primary`} style={{ position: 'absolute', bottom: '50px', left: '10px' }}>
+        <button onClick={loggingout} className={`btn btn-primary`} style={{ position: 'absolute', bottom: '10px', left: '10px' }}>
         Log Out
         </button>
         <button onClick={() => savemoney(useremail, 100000)} className={`btn btn-primary`} style={{ position: 'absolute', bottom: '90px', left: '10px' }}>
