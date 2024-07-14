@@ -35,7 +35,7 @@ function GameSelection() {
       <div className="question">
         <h2>Select game type:</h2>
         <div className="button-group">
-          {['Five-Cards-Stud', 'Five-Cards-Draw'].map(type => (
+          {['Five-Cards-Stud', 'Five-Cards-Draw', 'Holdem'].map(type => (
             <button
               key={type}
               className={`btn ${gameType === type ? 'btn-success' : 'btn-outline-primary'}`}

@@ -88,6 +88,39 @@ function facemaker(hands) {
   return face;
 }
 
+const combinations = (arr, k) => {
+  const results = [];
+  const combination = (start, path) => {
+    if (path.length === k) {
+      results.push(path);
+      return;
+    }
+    for (let i = start; i < arr.length; i++) {
+      combination(i + 1, [...path, arr[i]]);
+    }
+  };
+  combination(0, []);
+  return results;
+};
+
+const handDecision = (hands) => {
+  const bestHands = [];
+
+  hands.forEach(hand => {
+    const allCombinations = combinations(hand, 5);
+    let bestHand = allCombinations[0];
+
+    allCombinations.forEach(combination => {
+      if (compareHands(combination, bestHand) > 0) {
+        bestHand = combination;
+      }
+    });
+
+    bestHands.push(bestHand);
+  });
+  console.log(bestHands);
+  return bestHands;
+};
 // 승자를 판단하는 함수
 function determineWinner(hands, activity, is_face) {
   let bestHandIndex;
@@ -117,4 +150,8 @@ function determineWinner(hands, activity, is_face) {
   // return winners;
 }
 
-module.exports = { calculateHandRank, determineWinner, facemaker };
+function determineWinner7(hands, activity){
+  return determineWinner(handDecision(hands), activity);
+}
+
+module.exports = { calculateHandRank, determineWinner, determineWinner7, facemaker };

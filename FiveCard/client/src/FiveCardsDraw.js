@@ -624,7 +624,7 @@ function FiveCardsDraw() {
             onClick={handleOpen}
             disabled={betting_roundRef.current < 5 || showFifthCard}
           >
-            Open
+            Showdown
           </button>
           <div className="action-buttons">
             <button
