@@ -620,9 +620,13 @@ function Holdem() {
   };
 
   const combinatehand = (hands, communities) => {
-    let finalhands = new Array(hands.length).fill([]);
-    for (let i=0; i<hands.length; i++) finalhands[i] = hands[i].concat(communities[0]);
-    return finalhands;
+    if(communities){
+      let finalhands = new Array(hands.length).fill([]);
+      for (let i=0; i<hands.length; i++) finalhands[i] = hands[i].concat(communities[0]);
+      return finalhands;
+    } else {
+      return hands;
+    }
   }
 
   const renderBoxes = () => {
