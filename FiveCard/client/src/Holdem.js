@@ -212,14 +212,16 @@ function Holdem() {
         setBetting_round(prevBetting_Round => prevBetting_Round + 1);
         betting_roundRef.current = betting_roundRef.current + 1;
         // Flop
-        await drawCommunity();
-        await drawCommunity();
-        await drawCommunity();
-        await change_indicator_betting();
-        await setPlayershouldbetfunc();
-        await handleBettingRound();
-        setBetting_round(prevBetting_Round => prevBetting_Round + 1);
-        betting_roundRef.current = betting_roundRef.current + 1;
+        while (activePlayersRef.current.filter(person => person === true).length > 1 && betting_roundRef.current < 3) {
+          await drawCommunity();
+          await drawCommunity();
+          await drawCommunity();
+          await change_indicator_betting();
+          await setPlayershouldbetfunc();
+          await handleBettingRound();
+          setBetting_round(prevBetting_Round => prevBetting_Round + 1);
+          betting_roundRef.current = betting_roundRef.current + 1;
+        }
         // Until River
         while (activePlayersRef.current.filter(person => person === true).length > 1 && betting_roundRef.current < 5) {
           await drawCommunity();
@@ -683,7 +685,7 @@ function Holdem() {
         boxes.push(
           <div
             key={`Player-${i}`}
-            className={`btn btn-sm fold-button ${winner_indexRef.current == i ? 'btn-warning' : indicatorRef.current == i ? 'btn-danger' : !activePlayersRef.current[i] ? 'btn-secondary' : 'btn-primary'}`}
+            className={`btn btn-sm fold-button ${winner_indexRef.current === i ? 'btn-warning' : indicatorRef.current === i ? 'btn-danger' : !activePlayersRef.current[i] ? 'btn-secondary' : 'btn-primary'}`}
             style={{ left: `${x-8}%`, top: `${y - 11}%` }} // 원의 각 지점보다 약간 위에 둠
           >
             Bot {i} : {moneysRef.current[i]}
@@ -693,7 +695,7 @@ function Holdem() {
         boxes.push(
           <div
             key={`Player-${i}`}
-            className={`btn btn-sm fold-button ${winner_indexRef.current == i ? 'btn-warning' : indicatorRef.current == i ? 'btn-danger' : !activePlayersRef.current[i] ? 'btn-secondary' : 'btn-primary'}`}
+            className={`btn btn-sm fold-button ${winner_indexRef.current === i ? 'btn-warning' : indicatorRef.current === i ? 'btn-danger' : !activePlayersRef.current[i] ? 'btn-secondary' : 'btn-primary'}`}
             style={{ left: `${x-8}%`, top: `${y - 11}%` }} // 원의 각 지점보다 약간 위에 둠
           >
             Player : {moneysRef.current[i]}
