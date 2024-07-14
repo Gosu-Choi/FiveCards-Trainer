@@ -177,10 +177,8 @@ function Holdem() {
 
   useEffect(()=> {
     raisedRef.current = raised;
-    console.log("raised has been changed");
     if (!is_first_operation){
       if (is_beginning) {
-        console.log("it is beginning");
         const beginning_func = async() => {
           while (playershouldbetRef.current.some(person => person === true)){
             if (moneys[indicatorRef.current] < default_ante){
@@ -235,7 +233,6 @@ function Holdem() {
           setGamestarted(false);
           gamestartedRef.current = false;
           const winner = determineWinner7(combinatehand(handsRef.current, communityRef.current), activePlayersRef.current, false);
-          console.log(combinatehand(handsRef.current, communityRef.current));
           setWinner_index(winner);
           winner_indexRef.current = winner;
           setMoneys(prevMoneys => {
@@ -419,7 +416,6 @@ function Holdem() {
   };
 
   const fold = async (playerIndex) => {
-    console.log("player ", playerIndex, " folded");
     setActivePlayers(prevActivePlayers => {
       const newActivePlayers = [...prevActivePlayers];
       newActivePlayers[playerIndex] = false;
