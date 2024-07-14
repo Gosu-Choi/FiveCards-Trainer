@@ -13,12 +13,11 @@ export const AuthProvider = ({ children }) => {
     const storedAuthState = localStorage.getItem('isAuthenticated');
     const storedEmail = localStorage.getItem('email');
     const storedMoney = localStorage.getItem('money');
-    // if (storedAuthState === 'true') { 
-    //for test
+    if (storedAuthState === 'true') { 
       setIsAuthenticated(true);
       setUseremail(storedEmail);
       setPlayerMoney(storedMoney);
-    // }
+    }
     setLoading(false);
   }, []);
 

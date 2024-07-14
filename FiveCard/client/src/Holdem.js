@@ -162,12 +162,12 @@ function Holdem() {
       setCommunity(new Array(1).fill([]))
       setMoneys(new Array(playerCount).fill(100000));
       setPlayerchoice(new Array(playerCount).fill([]));
-      // setMoneys(prevMoneys => {
-      //   const newMoney = [...prevMoneys];
-      //   newMoney[0] = playerMoney;
-      //   moneysRef.current = newMoney;
-      //   return newMoney;
-      // });
+      setMoneys(prevMoneys => {
+        const newMoney = [...prevMoneys];
+        newMoney[0] = playerMoney;
+        moneysRef.current = newMoney;
+        return newMoney;
+      });
       setTurnmoneymanage(new Array(playerCount).fill(0));
       drawPokerTable();
       setExplanations(Array.from({ length: playerCount }, (_, i) => `해설 ${i + 1}`)); // 해설 개수를 변경할 수 있습니다.

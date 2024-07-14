@@ -151,7 +151,11 @@ function determineWinner(hands, activity, is_face) {
 }
 
 function determineWinner7(hands, activity){
-  return determineWinner(handDecision(hands), activity);
+  if (hands.some(hand => hand.length > 5)){
+    return determineWinner(handDecision(hands), activity);
+  } else {
+    return determineWinner(hands, activity);
+  }
 }
 
 module.exports = { calculateHandRank, determineWinner, determineWinner7, facemaker };
