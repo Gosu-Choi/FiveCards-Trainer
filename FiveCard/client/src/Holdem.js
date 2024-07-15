@@ -4,7 +4,7 @@ import { useAuth } from './AuthContext';
 import { shuffle } from './utils'; // 섞기 함수 임포트
 import './Holdem.css'; // 스타일을 위한 CSS 파일 임포트
 import 'bootstrap/dist/css/bootstrap.min.css'; // 부트스트랩 CSS 임포트
-import { calculateHandRank, determineWinner7, facemaker } from './pokerHands';
+import { evaluateHand, determineWinner7, facemaker } from './pokerHands';
 import { aiDecisionHoldem, DecisionFBHoldem } from './Bot';
 import marbleImage from './round-poker-table.svg';
 
@@ -688,7 +688,7 @@ function Holdem() {
             className={`btn btn-sm fold-button ${winner_indexRef.current === i ? 'btn-warning' : indicatorRef.current === i ? 'btn-danger' : !activePlayersRef.current[i] ? 'btn-secondary' : 'btn-primary'}`}
             style={{ left: `${x-8}%`, top: `${y - 11}%` }} // 원의 각 지점보다 약간 위에 둠
           >
-            Bot {i} : {moneysRef.current[i]}
+            Bot {i} : {Math.floor(moneysRef.current[i])}
           </div>
         );
       } else {
@@ -698,7 +698,7 @@ function Holdem() {
             className={`btn btn-sm fold-button ${winner_indexRef.current === i ? 'btn-warning' : indicatorRef.current === i ? 'btn-danger' : !activePlayersRef.current[i] ? 'btn-secondary' : 'btn-primary'}`}
             style={{ left: `${x-8}%`, top: `${y - 11}%` }} // 원의 각 지점보다 약간 위에 둠
           >
-            Player : {moneysRef.current[i]}
+            Player : {Math.floor(moneysRef.current[i])}
           </div>
         );
       }

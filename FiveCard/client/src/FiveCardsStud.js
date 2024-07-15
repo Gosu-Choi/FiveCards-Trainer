@@ -4,7 +4,7 @@ import { useAuth } from './AuthContext';
 import { shuffle } from './utils'; // 섞기 함수 임포트
 import './FiveCardsStud.css'; // 스타일을 위한 CSS 파일 임포트
 import 'bootstrap/dist/css/bootstrap.min.css'; // 부트스트랩 CSS 임포트
-import { calculateHandRank, determineWinner, facemaker } from './pokerHands';
+import { determineWinner, facemaker } from './pokerHands';
 import { aiDecisionStud, DecisionFBStud } from './Bot';
 import marbleImage from './round-poker-table.svg';
 
