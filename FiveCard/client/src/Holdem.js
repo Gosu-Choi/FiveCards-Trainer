@@ -7,6 +7,7 @@ import 'bootstrap/dist/css/bootstrap.min.css'; // 부트스트랩 CSS 임포트
 import { evaluateHand, determineWinner7, facemaker } from './pokerHands';
 import { aiDecisionHoldem, DecisionFBHoldem } from './Bot';
 import marbleImage from './round-poker-table.svg';
+import ChatBot from './Chatbot';
 
 function Holdem() {
  
@@ -40,6 +41,10 @@ function Holdem() {
   const [playerchoice, setPlayerchoice] = useState([]);
   const [rightBoxVisible, setRightBoxVisible] = useState(true);
   const [language, setLanguage] = useState("English");
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalContent, setModalContent] = useState('');
+  const [modalIndex, setModalIndex] = useState(null);
+  const [ments, setMents] =useState([]);
 
   const { useremail, login, logout, isAuthenticated, playerMoney, refreshmoney } = useAuth();
 
@@ -62,6 +67,11 @@ function Holdem() {
   const gamestartedRef = useRef(gamestarted);
   const communityDrawnRef = useRef(communityDrawn);
   const communityRef = useRef(community);
+  const mentsRef = useRef(ments);
+
+  useEffect(() => {
+    mentsRef.current = ments;
+  }, [ments]);
 
   useEffect(() => {
     communityRef.current = community;
@@ -154,6 +164,7 @@ function Holdem() {
 
   useEffect(() => {
     if (playerCount) {
+      setMents(new Array(playerCount).fill('Player Ments'));
       setActivePlayers(new Array(playerCount).fill(true));
       setPlayershouldbet(new Array(playerCount).fill(true));
       setCardsDrawn(new Array(playerCount).fill(0));
@@ -357,6 +368,12 @@ function Holdem() {
         await waitForPlayerDecision();
         const dec = await DecisionFBHoldem(0, activePlayersRef.current, handsRef.current, moneysRef.current, potRef.current, (communityRef.current[0].length === 5), playerchoiceRef.current, raisedRef.current, communityRef.current[0], playerchoiceRef.current, language);
         const advice = "You should have done ".concat(dec.decision);
+        setMents(prevMents => {
+          const newMents = [...prevMents]
+          newMents[indicatorRef.current] = dec.mention;
+          mentsRef.current = newMents;
+          return newMents;
+        })
         setExplanations(prevExplanation => {
           const prevE = [...prevExplanation];
           prevE[0] = advice;
@@ -365,6 +382,12 @@ function Holdem() {
         })
       } else {
         const dec = await aiDecisionHoldem(indicatorRef.current, activePlayersRef.current, handsRef.current, moneysRef.current, potRef.current, (communityRef.current[0].length === 5), raisedRef.current, communityRef.current[0], playerchoiceRef.current, language);
+        setMents(prevMents => {
+          const newMents = [...prevMents]
+          newMents[indicatorRef.current] = dec.mention;
+          mentsRef.current = newMents;
+          return newMents;
+        })
         const deci = dec.decision.split('.')[0];
         setExplanations(prevExplanation => {
           const prevE = [...prevExplanation];
@@ -629,6 +652,18 @@ function Holdem() {
     }
   }
 
+  const openModal = (content, index) => {
+    setModalContent(content);
+    setIsModalOpen(true);
+    setModalIndex(index);
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setModalContent('');
+    setModalIndex(null);
+  };
+
   const renderBoxes = () => {
     if (playerCount === null) return null;
 
@@ -735,6 +770,13 @@ function Holdem() {
 
   return (
   <div className="container">
+    {isModalOpen && (
+      <div className="modal" style={{ display: 'flex' }}>
+        <div className="modal-content">
+          <ChatBot closeModal={closeModal} chatContext={modalContent} modalIndex={modalIndex} ments={ments}/>
+        </div>
+      </div>
+    )}
     <div className={`left-box ${rightBoxVisible ? '' : 'centered'}`}>
     <div className="canvas-container">
       <canvas ref={canvasRef} width="600" height="600"></canvas>
@@ -795,9 +837,12 @@ function Holdem() {
       {rightBoxVisible && (
         <div className="right-box" style={{ gridTemplateRows: `repeat(${explanations.length}, 1fr)` }}>
           {explanations.map((explanation, index) => (
-            <div key={index} className={`${activePlayersRef.current[index] ? 'explanation-cell' : 'explanation-cell-folded'}`}>
+          <div key={index} className="explanation-wrapper">
+            <div className={`${activePlayersRef.current[index] ? 'explanation-cell' : 'explanation-cell-folded'}`}>
               {explanation}
             </div>
+            <button className="info-button" onClick={() => openModal(explanation, index)}>Talk to Player {index}</button>
+          </div>
           ))}
         </div>
       )}

@@ -68,6 +68,30 @@ app.post('/api/bot-communication', async (req, res) => {
   }
 });
 
+app.post('/api/bot-help', async (req, res) => {
+  const { message } = req.body;
+  console.log("Received message:", message); // 요청 수신 시 로그
+
+  try {
+    const response = await axios.post('https://api.openai.com/v1/chat/completions', {
+      model: 'gpt-4o',
+      messages: message,
+      max_tokens: 150,
+      n: 1,
+      stop: null,
+      temperature: 0.5,
+    }, {
+      headers: {
+        'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`, // Bearer 토큰 사용
+        'Content-Type': 'application/json',
+      },
+    });
+    res.json({ response: response.data.choices[0].message.content });
+  } catch (error) {
+    res.status(500).json({ error: 'Something went wrong', details: error.message });
+  }
+});
+
 app.post('/api/save', async (req, res) => {
   const { email, money } = req.body;
 

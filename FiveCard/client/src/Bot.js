@@ -14,7 +14,6 @@ const handleSendMessage = async (message) => {
   } else {
     return data.response;
   }
-  
 }
 
 const aiDecisionHoldem = async (indicator, survivor, hands, money, pot, is_final, raised, community, choicehistory, languageset) => {
@@ -50,7 +49,7 @@ const aiDecisionHoldem = async (indicator, survivor, hands, money, pot, is_final
     const decision = await handleSendMessage(mention);
     return new Promise((resolve) => {
       setTimeout(() => { 
-        resolve({ decision });
+        resolve({ decision, mention });
       }, 0);
     });
   }
@@ -81,7 +80,7 @@ const DecisionFBHoldem = async (indicator, survivor, hands, money, pot, is_final
   const decision = await handleSendMessage(mention);
   return new Promise((resolve) => {
     setTimeout(() => { 
-      resolve({ decision });
+      resolve({ decision, mention });
     }, 0);
   });
 };

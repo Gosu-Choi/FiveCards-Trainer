@@ -108,23 +108,139 @@
   padding: 10px;
 }
 
-.explanation-cell {
-  border: 1px solid #000;
-  margin: 5px;
-  padding: 10px;
+.explanation-wrapper {
   display: flex;
-  justify-content: center;
-  align-items: center;
-  font-size: x-small;
+  flex-direction: column;
+  flex: 1;
+  margin: 5px 0;
+}
+
+.explanation-cell, .explanation-cell-folded {
+  flex: 4; /* 해설 박스는 전체 높이의 4/5 차지 */
+  width: 100%;
+  padding: 5px;
+  border: 1px solid #000;
 }
 
 .explanation-cell-folded {
-  border: 1px solid #6e6e6e;
-  margin: 5px;
-  padding: 10px;
+  background-color: #6e6e6e;
+}
+
+.info-button {
+  flex: 1; /* 버튼은 전체 높이의 1/5 차지 */
+  width: 100%; /* 버튼의 너비를 해설 박스와 동일하게 설정 */
+  font-size: 12px;
+  cursor: pointer;
+  padding: 5px;
+  margin: 0;
+}
+.modal {
   display: flex;
   justify-content: center;
   align-items: center;
-  font-size: x-small;
-  background-color: #6e6e6e;
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(0, 0, 0, 0.4);
+}
+
+.modal-content {
+  background-color: #fff;
+  padding: 20px;
+  border: 1px solid #888;
+  width: 80%;
+  max-width: 600px;
+  height: 80vh; /* 고정 높이 설정 */
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden; /* 내부 스크롤을 숨기고 컨테이너 내에서 관리 */
+}
+
+.close-button {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  color: #aaa;
+  font-size: 28px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.close-button:hover,
+.close-button:focus {
+  color: black;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.chat-bot {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.chat-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  border-bottom: 1px solid #ddd;
+}
+
+.chat-body {
+  flex: 1;
+  padding: 10px;
+  overflow-y: auto; /* 채팅 내용이 길어질 경우 스크롤 가능하도록 설정 */
+  display: flex;
+  flex-direction: column;
+}
+
+.chat-footer {
+  display: flex;
+  padding: 10px;
+  border-top: 1px solid #ddd;
+}
+
+.chat-footer input {
+  flex: 1;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  margin-right: 10px;
+}
+
+.chat-footer button {
+  padding: 10px 20px;
+  border: none;
+  background-color: #007bff;
+  color: white;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.chat-footer button:hover {
+  background-color: #0056b3;
+}
+
+.chat-message {
+  margin-bottom: 10px;
+  padding: 10px;
+  border-radius: 4px;
+  max-width: 60%;
+}
+
+.bot-message {
+  align-self: flex-start;
+  background-color: #f1f1f1;
+}
+
+.user-message {
+  align-self: flex-end;
+  background-color: #007bff;
+  color: white;
 }
