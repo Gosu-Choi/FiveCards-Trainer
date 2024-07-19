@@ -841,7 +841,7 @@ function Holdem() {
             <div className={`${activePlayersRef.current[index] ? 'explanation-cell' : 'explanation-cell-folded'}`}>
               {explanation}
             </div>
-            <button class="btn btn-outline-dark info-button" onClick={() => openModal(explanation, index)}>Talk to Player {index}</button>
+            <button class="btn btn-outline-dark info-button" style={{ fontSize: 'x-small' }} onClick={() => openModal(explanation, index)}>Talk to Player {index}</button>
           </div>
           ))}
         </div>
