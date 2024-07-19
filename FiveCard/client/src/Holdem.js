@@ -773,7 +773,7 @@ function Holdem() {
     {isModalOpen && (
       <div className="modal" style={{ display: 'flex' }}>
         <div className="modal-content">
-          <ChatBot closeModal={closeModal} chatContext={modalContent} modalIndex={modalIndex} ments={ments}/>
+          <ChatBot closeModal={closeModal} chatContext={modalContent} modalIndex={modalIndex} ments={ments} language={language}/>
         </div>
       </div>
     )}
@@ -841,7 +841,7 @@ function Holdem() {
             <div className={`${activePlayersRef.current[index] ? 'explanation-cell' : 'explanation-cell-folded'}`}>
               {explanation}
             </div>
-            <button className="info-button" onClick={() => openModal(explanation, index)}>Talk to Player {index}</button>
+            <button class="btn btn-outline-dark info-button" onClick={() => openModal(explanation, index)}>Talk to Player {index}</button>
           </div>
           ))}
         </div>

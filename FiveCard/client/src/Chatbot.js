@@ -22,7 +22,7 @@ const ChatMessage = ({ message, role }) => (
     </div>
   );
 
-const ChatBot = ({ closeModal, chatContext, modalIndex, ments }) => {
+const ChatBot = ({ closeModal, chatContext, modalIndex, ments, language }) => {
   console.log(ments);
   console.log(modalIndex);
   const [messages, setMessages] = useState([{ content: chatContext, role: "assistant" }]);
@@ -30,11 +30,11 @@ const ChatBot = ({ closeModal, chatContext, modalIndex, ments }) => {
 
   const handleManageMessage = async () => {
     if (userInput.trim()) {
-      const newMessages = [...messages, { content: userInput.concat(" Please give me your answer for essential 3-4 sentences."), role: "user" }];
+      const help = await handleSendMessage([...messages, { content: userInput.concat(" Please give me your answer for essential 3-4 sentences in .").concat(language), role: "user" }]);
+      const newMessages = [...messages, { content: userInput, role: "user" }];
       setMessages(newMessages);
       setUserInput('');
 
-      const help = await handleSendMessage([{content: ments[modalIndex], role: "user"}, ...newMessages]);
       setMessages((prevMessages) => [...prevMessages, { content: help, role: "assistant" }]);
     }
   };
