@@ -129,7 +129,7 @@
 .info-button {
   flex: 1; /* 버튼은 전체 높이의 1/5 차지 */
   width: 50%; /* 버튼의 너비를 해설 박스와 동일하게 설정 */
-  font-size: 12px;
+  font-size: small;
   cursor: pointer;
   align-self: center;
   padding: 5px;
