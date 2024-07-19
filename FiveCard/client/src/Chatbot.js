@@ -30,7 +30,7 @@ const ChatBot = ({ closeModal, chatContext, modalIndex, ments }) => {
 
   const handleManageMessage = async () => {
     if (userInput.trim()) {
-      const newMessages = [...messages, { content: userInput, role: "user" }];
+      const newMessages = [...messages, { content: userInput.concat(" Please give me your answer for essential 3-4 sentences."), role: "user" }];
       setMessages(newMessages);
       setUserInput('');
 
@@ -53,7 +53,7 @@ const ChatBot = ({ closeModal, chatContext, modalIndex, ments }) => {
       </div>
       <div className="chat-body">
         {messages.map((message, index) => (
-          <ChatMessage key={index} message={message.content} isBot={message.role} />
+          <ChatMessage key={index} message={message.content} role={message.role} />
         ))}
       </div>
       <div className="chat-footer">
