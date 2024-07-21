@@ -742,6 +742,30 @@ function Holdem() {
     return boxes;
   };
 
+  useEffect(() => {
+    // 컴포넌트가 마운트될 때 캔버스 크기를 조정
+    resizeCanvas();
+    // 윈도우 크기 변경 시 캔버스 크기를 조정
+    window.addEventListener('resize', resizeCanvas);
+
+    return () => {
+      window.removeEventListener('resize', resizeCanvas);
+    };
+  }, []);
+
+
+  const resizeCanvas = () => {
+    const canvas = canvasRef.current;
+    if (canvas) {
+      // 화면의 가로, 세로 크기 중 작은 값을 선택하여 정사각형 유지
+      const size = Math.min(window.innerWidth, window.innerHeight);
+      canvas.width = size;
+      canvas.height = size;
+
+      // 캔버스를 그리는 함수를 호출합니다.
+      drawPokerTable();
+    }
+  };
 
   const canvasRef = useRef(null);
   const [explanations, setExplanations] = useState([]);
@@ -779,7 +803,7 @@ function Holdem() {
     )}
     <div className={`left-box ${rightBoxVisible ? '' : 'centered'}`}>
     <div className="canvas-container">
-      <canvas ref={canvasRef} width="600" height="600"></canvas>
+      <canvas ref={canvasRef} ></canvas>
         {renderBoxes()}
         <div className="button-container">
           <div>Pot: {potRef.current}</div>
