@@ -42,7 +42,9 @@ const aifeedbackforOM = async(history, model, playerCount, language, style) => {
   }
   mention = mention.concat(" And my opponent modeling is following.");
   for (let i = 1; i<playerCount; i++){
-    mention = mention.concat(" I modeled player ").concat(i).concat(" as following, '").concat(model[i-1]).concat("'");
+    if (model[i-1] !== null){
+      mention = mention.concat(" I modeled player ").concat(i).concat(" as following, '").concat(model[i-1]).concat("'");
+    } 
   }
   mention = mention.concat(" And in fact, there are deliberated format for the style of these players. ");
   for (let i = 1; i<playerCount; i++){

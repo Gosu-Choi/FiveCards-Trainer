@@ -364,36 +364,35 @@ function Holdem() {
     while (playershouldbetRef.current.some(person => person === true) && activePlayersRef.current.filter(person => person === true).length > 1){
       if (indicatorRef.current === 0){
         await waitForPlayerDecision();
-        // const dec = await DecisionFBHoldem(0, activePlayersRef.current, handsRef.current, moneysRef.current, potRef.current, (communityRef.current[0].length === 5), playerchoiceRef.current, raisedRef.current, communityRef.current[0], playerchoiceRef.current, language);
-        // const advice = "You should have done ".concat(dec.decision);
-        // setMents(prevMents => {
-        //   const newMents = [...prevMents]
-        //   newMents[indicatorRef.current] = dec.mention;
-        //   mentsRef.current = newMents;
-        //   return newMents;
-        // })
-        // setExplanations(prevExplanation => {
-        //   const prevE = [...prevExplanation];
-        //   prevE[0] = advice;
-        //   explanationsRef.current = prevE;
-        //   return prevE;
-        // })
+        const dec = await DecisionFBHoldem(0, activePlayersRef.current, handsRef.current, moneysRef.current, potRef.current, (communityRef.current[0].length === 5), playerchoiceRef.current, raisedRef.current, communityRef.current[0], playerchoiceRef.current, language);
+        const advice = "You should have done ".concat(dec.decision);
+        setMents(prevMents => {
+          const newMents = [...prevMents]
+          newMents[indicatorRef.current] = dec.mention;
+          mentsRef.current = newMents;
+          return newMents;
+        })
+        setExplanations(prevExplanation => {
+          const prevE = [...prevExplanation];
+          prevE[0] = advice;
+          explanationsRef.current = prevE;
+          return prevE;
+        })
       } else {
-        // const dec = await aiDecisionHoldem(indicatorRef.current, activePlayersRef.current, handsRef.current, moneysRef.current, potRef.current, (communityRef.current[0].length === 5), raisedRef.current, communityRef.current[0], playerchoiceRef.current, language, pokerstyle[indicatorRef.current-1]);
-        // setMents(prevMents => {
-        //   const newMents = [...prevMents]
-        //   newMents[indicatorRef.current] = dec.mention;
-        //   mentsRef.current = newMents;
-        //   return newMents;
-        // })
-        // const deci = dec.decision.split('.')[0];
-        const deci = "Call";
-        // setExplanations(prevExplanation => {
-        //   const prevE = [...prevExplanation];
-        //   prevE[indicatorRef.current] = "Bot ".concat(indicatorRef.current).concat("'s rationale for the decision: ").concat(dec.decision);
-        //   explanationsRef.current = prevE;
-        //   return prevE;
-        // })
+        const dec = await aiDecisionHoldem(indicatorRef.current, activePlayersRef.current, handsRef.current, moneysRef.current, potRef.current, (communityRef.current[0].length === 5), raisedRef.current, communityRef.current[0], playerchoiceRef.current, language, pokerstyle[indicatorRef.current-1]);
+        setMents(prevMents => {
+          const newMents = [...prevMents]
+          newMents[indicatorRef.current] = dec.mention;
+          mentsRef.current = newMents;
+          return newMents;
+        })
+        const deci = dec.decision.split('.')[0];
+        setExplanations(prevExplanation => {
+          const prevE = [...prevExplanation];
+          prevE[indicatorRef.current] = "Bot ".concat(indicatorRef.current).concat("'s rationale for the decision: ").concat(dec.decision);
+          explanationsRef.current = prevE;
+          return prevE;
+        })
         if (deci === 'Raise') {
           await raise(indicatorRef.current);
         } else if (deci === 'Fold') {
