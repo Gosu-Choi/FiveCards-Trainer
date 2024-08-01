@@ -120,7 +120,6 @@
   width: 100%;
   padding: 5px;
   border: 1px solid #000;
-  overflow: auto; /* 내부 스크롤 활성화 */
 }
 
 .explanation-cell-folded {

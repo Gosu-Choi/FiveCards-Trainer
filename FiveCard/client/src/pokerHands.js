@@ -203,7 +203,6 @@ const handDecision = (hands) => {
 
     bestHands.push(bestHand);
   });
-  console.log(bestHands);
   return bestHands;
 };
 // 승자를 판단하는 함수

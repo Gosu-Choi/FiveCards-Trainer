@@ -11,7 +11,6 @@ import ChatBot from './Chatbot';
 import { useHistory } from './historymaker';
 
 function Holdem() {
- 
   const default_player_number = 5;
   const location = useLocation();
   const navigate = useNavigate();
@@ -41,7 +40,7 @@ function Holdem() {
   const [winner_index, setWinner_index] = useState(null);
   const [playerchoice, setPlayerchoice] = useState([]);
   const [rightBoxVisible, setRightBoxVisible] = useState(true);
-  const [language, setLanguage] = useState("English");
+  const [language, setLanguage] = useState("Korean");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalContent, setModalContent] = useState('');
   const [modalIndex, setModalIndex] = useState(null);
@@ -157,7 +156,7 @@ function Holdem() {
   useEffect(() => {
     if (playerCount) {
       setOpponentmodels(new Array(playerCount-1).fill(''));
-      setPokerstyle(Array.from({ length: playerCount-1 }, () => Math.random() < 0.5 ? 'defensive' : 'offensive'))
+      setPokerstyle(Array.from({ length: playerCount-1 }, () => Math.random() < 0.5 ? 'defensive' : 'offensive'));
       setMents(new Array(playerCount).fill('Player Ments'));
       setActivePlayers(new Array(playerCount).fill(true));
       setPlayershouldbet(new Array(playerCount).fill(true));
@@ -242,8 +241,10 @@ function Holdem() {
           setWinner_index(winner);
           winner_indexRef.current = winner;
           historization({betting_result: playerchoiceRef.current, community_cards: communityRef.current[0], final_players: activePlayersRef.current, player_hands: handsRef.current});
-          const newfeedbackforOM = await aifeedbackforOM(historyexport(5), opponentmodelsRef.current, playerCount, language, pokerstyle);
-          setFeedbackforOM(newfeedbackforOM.feedback);
+          if (!opponentmodelsRef.every(e => e===null)) {
+            const newfeedbackforOM = await aifeedbackforOM(historyexport(5), opponentmodelsRef.current, playerCount, language, pokerstyle);
+            setFeedbackforOM(newfeedbackforOM.feedback);
+          }
           setMoneys(prevMoneys => {
             const newMoney = [...prevMoneys];
             newMoney[winner] = newMoney[winner] + potRef.current;
@@ -843,38 +844,44 @@ function Holdem() {
         </button>
       </div>
       {rightBoxVisible && (
-        <div className="right-box" style={{ gridTemplateRows: `repeat(${explanations.length}, 1fr)` }}>
-          {explanations.map((explanation, index) => (
-          <div key={index} className="explanation-wrapper">
-            <div className={`${activePlayersRef.current[index] ? 'explanation-cell' : 'explanation-cell-folded'}`}>
-              {explanation}
+        <div>
+          Bot Explanation Mode
+          <div className="right-box" style={{ gridTemplateRows: `repeat(${explanations.length}, 1fr)` }}>
+            {explanations.map((explanation, index) => (
+            <div key={index} className="explanation-wrapper">
+              <div className={`${activePlayersRef.current[index] ? 'explanation-cell' : 'explanation-cell-folded'}`}>
+                {explanation}
+              </div>
+              <button class="btn btn-outline-dark info-button" style={{ fontSize: 'x-small' }} onClick={() => openModal(explanation, index)}>Talk to Player {index}</button>
             </div>
-            <button class="btn btn-outline-dark info-button" style={{ fontSize: 'x-small' }} onClick={() => openModal(explanation, index)}>Talk to Player {index}</button>
+            ))}
           </div>
-          ))}
         </div>
       )}
       {!rightBoxVisible && (
-        <div className="right-box" style={{ gridTemplateRows: `repeat(${opponentmodels.length+1}, 1fr)` }}>
-          <div key={-1} className="explanation-wrapper">
-            <div className={'explanation-cell'}>
-              {feedbackforOM}
+        <div>
+          Bot Description Mode
+          <div className="right-box" style={{ gridTemplateRows: `repeat(${opponentmodels.length+1}, 1fr)` }}>
+            <div key={-1} className="explanation-wrapper">
+              <div className={'explanation-cell'}>
+                {feedbackforOM}
+              </div>
             </div>
+            {opponentmodels.map((input, index) => (
+              <div key={index} className="explanation-wrapper">
+                <textarea
+                  className={'explanation-cell'}
+                  value={input}
+                  onChange={(e) => handleOpponentModelChange(index, e.target.value)}
+                  placeholder={`Bot ${index + 1}에 대한 묘사 입력`}
+                />
+              </div>
+            ))}
           </div>
-          {opponentmodels.map((input, index) => (
-            <div key={index} className="explanation-wrapper">
-              <textarea
-                className={'explanation-cell'}
-                value={input}
-                onChange={(e) => handleOpponentModelChange(index, e.target.value)}
-                placeholder={`Bot ${index + 1}에 대한 묘사 입력`}
-              />
-            </div>
-          ))}
         </div>
       )}
       <button onClick={() => setRightBoxVisible(!rightBoxVisible)} className={'btn btn-primary'} style={{ position: 'absolute', top: '10px', left: '10px' }}>
-        {rightBoxVisible ? 'Bot Explanation Mode' : 'Bot Description Mode'}
+        {!rightBoxVisible ? 'To Bot Explanation Mode' : 'To Bot Description Mode'}
       </button>
       <button onClick={() => togglelanguage()} className={`btn btn-primary`} style={{ position: 'absolute', top: '50px', left: '10px' }}>
         {language === "English" ? '한국어로 변경' : 'In English'}
