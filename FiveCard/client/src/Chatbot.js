@@ -26,16 +26,19 @@ const ChatBot = ({ closeModal, chatContext, modalIndex, ments, language }) => {
   console.log(ments);
   console.log(modalIndex);
   const [messages, setMessages] = useState([{ content: chatContext, role: "assistant" }]);
+  const [visualmessages, setVisualmessages] = useState([{ content: chatContext, role: "assistant" }]);
   const [userInput, setUserInput] = useState('');
 
   const handleManageMessage = async () => {
     if (userInput.trim()) {
-      const help = await handleSendMessage([...messages, { content: userInput.concat(" Please give me your answer for essential 3-4 sentences in .").concat(language), role: "user" }]);
       const newMessages = [...messages, { content: userInput, role: "user" }];
+      setVisualmessages(newMessages);
+      const help = await handleSendMessage([...messages, { content: userInput.concat(" Please give me your answer for essential 3-4 sentences in .").concat(language), role: "user" }]);
       setMessages(newMessages);
       setUserInput('');
 
       setMessages((prevMessages) => [...prevMessages, { content: help, role: "assistant" }]);
+      setVisualmessages(messages);
     }
   };
 
@@ -52,7 +55,7 @@ const ChatBot = ({ closeModal, chatContext, modalIndex, ments, language }) => {
         <button onClick={closeModal} className="close-button">&times;</button>
       </div>
       <div className="chat-body">
-        {messages.map((message, index) => (
+        {visualmessages.map((message, index) => (
           <ChatMessage key={index} message={message.content} role={message.role} />
         ))}
       </div>

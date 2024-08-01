@@ -5,9 +5,10 @@ import { shuffle } from './utils'; // 섞기 함수 임포트
 import './Holdem.css'; // 스타일을 위한 CSS 파일 임포트
 import 'bootstrap/dist/css/bootstrap.min.css'; // 부트스트랩 CSS 임포트
 import { evaluateHand, determineWinner7, facemaker } from './pokerHands';
-import { aiDecisionHoldem, DecisionFBHoldem } from './Bot';
+import { aiDecisionHoldem, DecisionFBHoldem, aifeedbackforOM } from './Bot';
 import marbleImage from './round-poker-table.svg';
 import ChatBot from './Chatbot';
+import { useHistory } from './historymaker';
 
 function Holdem() {
  
@@ -45,9 +46,12 @@ function Holdem() {
   const [modalContent, setModalContent] = useState('');
   const [modalIndex, setModalIndex] = useState(null);
   const [ments, setMents] =useState([]);
+  const [opponentmodels, setOpponentmodels] = useState([]);
+  const [feedbackforOM, setFeedbackforOM] = useState("After game over, feedback for opponent modeling will be shown here.");
+  const { historization, historyexport, historyRef } = useHistory();
+  const [pokerstyle, setPokerstyle] = useState([]);
 
   const { useremail, login, logout, isAuthenticated, playerMoney, refreshmoney } = useAuth();
-
   const playerchoiceRef = useRef(playerchoice);
   const cardsDrawnRef = useRef(cardsDrawn);
   const showFifthCardRef = useRef(showFifthCard);
@@ -68,6 +72,11 @@ function Holdem() {
   const communityDrawnRef = useRef(communityDrawn);
   const communityRef = useRef(community);
   const mentsRef = useRef(ments);
+  const opponentmodelsRef = useRef(opponentmodels);
+
+  useEffect(() => {
+    opponentmodelsRef.current = opponentmodels
+  }, [opponentmodels])
 
   useEffect(() => {
     mentsRef.current = ments;
@@ -145,25 +154,10 @@ function Holdem() {
     }
   }, [location.state]);
 
-  // const saving_function = async(money) => { // incomplete
-  //   const response = await fetch('http://localhost:5000/fivecardsstud', {
-  //     method: 'POST',
-  //     headers: {
-  //       'Content-Type': 'application/json',
-  //     },
-  //     body: JSON.stringify({ email, money }),
-  //   });
-  
-  //   const data = await response.json();
-  //   if (data.success) {
-  //     return null;
-  //   } else {
-  //     alert('Error has occured');
-  //   }
-  // }
-
   useEffect(() => {
     if (playerCount) {
+      setOpponentmodels(new Array(playerCount-1).fill(''));
+      setPokerstyle(Array.from({ length: playerCount-1 }, () => Math.random() < 0.5 ? 'defensive' : 'offensive'))
       setMents(new Array(playerCount).fill('Player Ments'));
       setActivePlayers(new Array(playerCount).fill(true));
       setPlayershouldbet(new Array(playerCount).fill(true));
@@ -184,6 +178,7 @@ function Holdem() {
       setExplanations(Array.from({ length: playerCount }, (_, i) => `해설 ${i + 1}`)); // 해설 개수를 변경할 수 있습니다.
       explanationsRef.current = Array.from({ length: playerCount }, (_, i) => `해설 ${i + 1}`);
     }
+    console.log(pokerstyle)
   }, [playerCount]);
 
   useEffect(()=> {
@@ -195,7 +190,7 @@ function Holdem() {
             if (moneys[indicatorRef.current] < default_ante){
               await fold(indicatorRef.current);
             } else {
-              await call(indicatorRef.current);
+              await call(indicatorRef.current, true);
             }
           }
           await drawCards();
@@ -246,6 +241,9 @@ function Holdem() {
           const winner = determineWinner7(combinatehand(handsRef.current, communityRef.current), activePlayersRef.current, false);
           setWinner_index(winner);
           winner_indexRef.current = winner;
+          historization({betting_result: playerchoiceRef.current, community_cards: communityRef.current[0], final_players: activePlayersRef.current, player_hands: handsRef.current});
+          const newfeedbackforOM = await aifeedbackforOM(historyexport(5), opponentmodelsRef.current, playerCount, language, pokerstyle);
+          setFeedbackforOM(newfeedbackforOM.feedback);
           setMoneys(prevMoneys => {
             const newMoney = [...prevMoneys];
             newMoney[winner] = newMoney[winner] + potRef.current;
@@ -366,35 +364,36 @@ function Holdem() {
     while (playershouldbetRef.current.some(person => person === true) && activePlayersRef.current.filter(person => person === true).length > 1){
       if (indicatorRef.current === 0){
         await waitForPlayerDecision();
-        const dec = await DecisionFBHoldem(0, activePlayersRef.current, handsRef.current, moneysRef.current, potRef.current, (communityRef.current[0].length === 5), playerchoiceRef.current, raisedRef.current, communityRef.current[0], playerchoiceRef.current, language);
-        const advice = "You should have done ".concat(dec.decision);
-        setMents(prevMents => {
-          const newMents = [...prevMents]
-          newMents[indicatorRef.current] = dec.mention;
-          mentsRef.current = newMents;
-          return newMents;
-        })
-        setExplanations(prevExplanation => {
-          const prevE = [...prevExplanation];
-          prevE[0] = advice;
-          explanationsRef.current = prevE;
-          return prevE;
-        })
+        // const dec = await DecisionFBHoldem(0, activePlayersRef.current, handsRef.current, moneysRef.current, potRef.current, (communityRef.current[0].length === 5), playerchoiceRef.current, raisedRef.current, communityRef.current[0], playerchoiceRef.current, language);
+        // const advice = "You should have done ".concat(dec.decision);
+        // setMents(prevMents => {
+        //   const newMents = [...prevMents]
+        //   newMents[indicatorRef.current] = dec.mention;
+        //   mentsRef.current = newMents;
+        //   return newMents;
+        // })
+        // setExplanations(prevExplanation => {
+        //   const prevE = [...prevExplanation];
+        //   prevE[0] = advice;
+        //   explanationsRef.current = prevE;
+        //   return prevE;
+        // })
       } else {
-        const dec = await aiDecisionHoldem(indicatorRef.current, activePlayersRef.current, handsRef.current, moneysRef.current, potRef.current, (communityRef.current[0].length === 5), raisedRef.current, communityRef.current[0], playerchoiceRef.current, language);
-        setMents(prevMents => {
-          const newMents = [...prevMents]
-          newMents[indicatorRef.current] = dec.mention;
-          mentsRef.current = newMents;
-          return newMents;
-        })
-        const deci = dec.decision.split('.')[0];
-        setExplanations(prevExplanation => {
-          const prevE = [...prevExplanation];
-          prevE[indicatorRef.current] = "Bot ".concat(indicatorRef.current).concat("'s rationale for the decision: ").concat(dec.decision);
-          explanationsRef.current = prevE;
-          return prevE;
-        })
+        // const dec = await aiDecisionHoldem(indicatorRef.current, activePlayersRef.current, handsRef.current, moneysRef.current, potRef.current, (communityRef.current[0].length === 5), raisedRef.current, communityRef.current[0], playerchoiceRef.current, language, pokerstyle[indicatorRef.current-1]);
+        // setMents(prevMents => {
+        //   const newMents = [...prevMents]
+        //   newMents[indicatorRef.current] = dec.mention;
+        //   mentsRef.current = newMents;
+        //   return newMents;
+        // })
+        // const deci = dec.decision.split('.')[0];
+        const deci = "Call";
+        // setExplanations(prevExplanation => {
+        //   const prevE = [...prevExplanation];
+        //   prevE[indicatorRef.current] = "Bot ".concat(indicatorRef.current).concat("'s rationale for the decision: ").concat(dec.decision);
+        //   explanationsRef.current = prevE;
+        //   return prevE;
+        // })
         if (deci === 'Raise') {
           await raise(indicatorRef.current);
         } else if (deci === 'Fold') {
@@ -404,6 +403,11 @@ function Holdem() {
         }
       }
     }
+    setPlayerchoice(prevPlayerChoice => {
+      return prevPlayerChoice.map((choice, index) => {
+        return [...choice, betting_roundRef.current];
+      });
+    });
     setTurn(false);
   };
 
@@ -664,6 +668,12 @@ function Holdem() {
     setModalIndex(null);
   };
 
+  const handleOpponentModelChange = (index, value) => {
+    const newOpponentmodels = [...opponentmodels];
+    newOpponentmodels[index] = value;
+    setOpponentmodels(newOpponentmodels);
+  };
+
   const renderBoxes = () => {
     if (playerCount === null) return null;
 
@@ -742,31 +752,6 @@ function Holdem() {
     return boxes;
   };
 
-  useEffect(() => {
-    // 컴포넌트가 마운트될 때 캔버스 크기를 조정
-    resizeCanvas();
-    // 윈도우 크기 변경 시 캔버스 크기를 조정
-    window.addEventListener('resize', resizeCanvas);
-
-    return () => {
-      window.removeEventListener('resize', resizeCanvas);
-    };
-  }, []);
-
-
-  const resizeCanvas = () => {
-    const canvas = canvasRef.current;
-    if (canvas) {
-      // 화면의 가로, 세로 크기 중 작은 값을 선택하여 정사각형 유지
-      const size = Math.min(window.innerWidth, window.innerHeight);
-      canvas.width = size;
-      canvas.height = size;
-
-      // 캔버스를 그리는 함수를 호출합니다.
-      drawPokerTable();
-    }
-  };
-
   const canvasRef = useRef(null);
   const [explanations, setExplanations] = useState([]);
   const explanationsRef = useRef(explanations);
@@ -803,7 +788,7 @@ function Holdem() {
     )}
     <div className={`left-box ${rightBoxVisible ? '' : 'centered'}`}>
     <div className="canvas-container">
-      <canvas ref={canvasRef} ></canvas>
+      <canvas ref={canvasRef} width="600" height="600"></canvas>
         {renderBoxes()}
         <div className="button-container">
           <div>Pot: {potRef.current}</div>
@@ -870,8 +855,27 @@ function Holdem() {
           ))}
         </div>
       )}
-      <button onClick={() => setRightBoxVisible(!rightBoxVisible)} className={`btn ${rightBoxVisible ? 'btn-secondary' : 'btn-primary'}`} style={{ position: 'absolute', top: '10px', left: '10px' }}>
-        Trainer {rightBoxVisible ? 'Off' : 'On'}
+      {!rightBoxVisible && (
+        <div className="right-box" style={{ gridTemplateRows: `repeat(${opponentmodels.length+1}, 1fr)` }}>
+          <div key={-1} className="explanation-wrapper">
+            <div className={'explanation-cell'}>
+              {feedbackforOM}
+            </div>
+          </div>
+          {opponentmodels.map((input, index) => (
+            <div key={index} className="explanation-wrapper">
+              <textarea
+                className={'explanation-cell'}
+                value={input}
+                onChange={(e) => handleOpponentModelChange(index, e.target.value)}
+                placeholder={`Bot ${index + 1}에 대한 묘사 입력`}
+              />
+            </div>
+          ))}
+        </div>
+      )}
+      <button onClick={() => setRightBoxVisible(!rightBoxVisible)} className={'btn btn-primary'} style={{ position: 'absolute', top: '10px', left: '10px' }}>
+        {rightBoxVisible ? 'Bot Explanation Mode' : 'Bot Description Mode'}
       </button>
       <button onClick={() => togglelanguage()} className={`btn btn-primary`} style={{ position: 'absolute', top: '50px', left: '10px' }}>
         {language === "English" ? '한국어로 변경' : 'In English'}
