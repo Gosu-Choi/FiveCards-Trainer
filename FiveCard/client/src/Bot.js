@@ -50,7 +50,7 @@ const aifeedbackforOM = async(history, model, playerCount, language, style) => {
   for (let i = 1; i<playerCount; i++){
     mention = mention.concat(" Player ").concat(i).concat(" has been designed as ").concat(style[i-1]).concat(" style, ");
   }
-  mention = mention.concat(" How do you feedback for my opponent modeling? Please give me your idea for my opponent modeling briefly in ").concat(language).concat(", without any special mark, particularly '*' and if I did not make any opponent modeling for one, then please give me some hint for that. Additionally, DON'T directly mention that this player is systematically modeled as something.");
+  mention = mention.concat(" How do you feedback for my opponent modeling? Please give me your idea for my opponent modeling briefly in ").concat(language).concat(", without any special mark, particularly '*' and if I did not make any opponent modeling for one, then please give me some hint for that. Additionally, DON'T directly mention that this player is systematically modeled as something. And you should briefly answer because if you make a long answer then your answer will not be transmitted.");
   const feedback = await handleSendMessage(mention);
   console.log(feedback)
   return new Promise((resolve) => {

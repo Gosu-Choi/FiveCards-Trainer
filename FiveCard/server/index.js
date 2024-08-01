@@ -52,7 +52,7 @@ app.post('/api/bot-communication', async (req, res) => {
       messages: [
         { role: 'user', content: message }
       ],
-      max_tokens: 150,
+      max_tokens: 500,
       n: 1,
       stop: null,
       temperature: 0.5,
