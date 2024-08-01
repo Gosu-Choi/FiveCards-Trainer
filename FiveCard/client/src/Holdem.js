@@ -241,7 +241,7 @@ function Holdem() {
           setWinner_index(winner);
           winner_indexRef.current = winner;
           historization({betting_result: playerchoiceRef.current, community_cards: communityRef.current[0], final_players: activePlayersRef.current, player_hands: handsRef.current});
-          if (!opponentmodelsRef.every(e => e===null)) {
+          if (!opponentmodelsRef.current.every(e => e===null)) {
             const newfeedbackforOM = await aifeedbackforOM(historyexport(5), opponentmodelsRef.current, playerCount, language, pokerstyle);
             setFeedbackforOM(newfeedbackforOM.feedback);
           }
