@@ -844,8 +844,6 @@ function Holdem() {
         </button>
       </div>
       {rightBoxVisible && (
-        <div>
-          Bot Explanation Mode
           <div className="right-box" style={{ gridTemplateRows: `repeat(${explanations.length}, 1fr)` }}>
             {explanations.map((explanation, index) => (
             <div key={index} className="explanation-wrapper">
@@ -856,11 +854,8 @@ function Holdem() {
             </div>
             ))}
           </div>
-        </div>
       )}
       {!rightBoxVisible && (
-        <div>
-          Bot Description Mode
           <div className="right-box" style={{ gridTemplateRows: `repeat(${opponentmodels.length+1}, 1fr)` }}>
             <div key={-1} className="explanation-wrapper">
               <div className={'explanation-cell'}>
@@ -878,7 +873,6 @@ function Holdem() {
               </div>
             ))}
           </div>
-        </div>
       )}
       <button onClick={() => setRightBoxVisible(!rightBoxVisible)} className={'btn btn-primary'} style={{ position: 'absolute', top: '10px', left: '10px' }}>
         {!rightBoxVisible ? 'To Bot Explanation Mode' : 'To Bot Description Mode'}
