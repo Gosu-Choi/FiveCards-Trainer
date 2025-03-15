@@ -75,16 +75,6 @@ function Holdem() {
   const opponentmodelsRef = useRef(opponentmodels);
   const raiseAmountRef = useRef(raiseAmount);
 
-  Object.defineProperty(moneysRef, "current", {
-    set(value) {
-      console.log("moneysRef.current changed:", value);
-      this._value = value;
-    },
-    get() {
-      return this._value;
-    },
-  });
-
   useEffect(() => {
     opponentmodelsRef.current = opponentmodels
   }, [opponentmodels])
@@ -184,6 +174,7 @@ function Holdem() {
         moneysRef.current = newMoney;
         return newMoney;
       });
+      console.log(moneysRef.current)
       setTurnmoneymanage(new Array(playerCount).fill(0));
       drawPokerTable();
       setExplanations(Array.from({ length: playerCount }, (_, i) => `해설 ${i + 1}`));
@@ -262,10 +253,12 @@ function Holdem() {
           //   newMoney[winner] = newMoney[winner] + potRef.current;
           //   return newMoney;
           // })
+          console.log(moneysRef.current)
           let temp = [...moneysRef.current];
           moneysRef.current[winner] = temp[winner] + potRef.current;
           setPot(0);
           potRef.current = 0;
+          console.log(moneysRef.current)
         }
         if (activePlayersRef.current.filter(person => person === true).length > 1 && showFifthCardRef.current === false){
           await waitForOpen();
@@ -494,6 +487,7 @@ function Holdem() {
 
   const call = async (playerIndex, is_from_raise=false) => {
     const moneyshouldpaid = raisedRef.current - turnmoneymanageRef.current[playerIndex];
+    console.log(moneysRef.current)
     const newMoney = ( moneysRef.current[playerIndex] - moneyshouldpaid > 0 ? moneysRef.current[playerIndex] - moneyshouldpaid : 0 );
     const moneyPaid = ( moneysRef.current[playerIndex] - moneyshouldpaid > 0 ? moneyshouldpaid : moneysRef.current[playerIndex] );
 
@@ -502,7 +496,7 @@ function Holdem() {
       potRef.current = newPot;
       return prevPot + moneyPaid;
     });
-  
+    console.log(moneysRef.current)
     let tempMoney = [...moneysRef.current];
     tempMoney[playerIndex] = newMoney;
     moneysRef.current = tempMoney
