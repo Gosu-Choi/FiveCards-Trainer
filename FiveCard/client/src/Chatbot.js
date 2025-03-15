@@ -22,9 +22,7 @@ const ChatMessage = ({ message, role }) => (
     </div>
   );
 
-const ChatBot = ({ closeModal, chatContext, modalIndex, ments, language }) => {
-  console.log(ments);
-  console.log(modalIndex);
+const ChatBot = ({ closeModal, chatContext, modalIndex, ments, language }) => { // ments should be used.
   const [messages, setMessages] = useState([{ content: chatContext, role: "assistant" }]);
   const [visualmessages, setVisualmessages] = useState([{ content: chatContext, role: "assistant" }]);
   const [userInput, setUserInput] = useState('');
@@ -39,7 +37,7 @@ const ChatBot = ({ closeModal, chatContext, modalIndex, ments, language }) => {
       const help = await handleSendMessage([...messages, { content: userInput.concat(" Please give me your answer for essential 3-4 sentences in .").concat(language), role: "user" }]);
   
       setMessages((prevMessages) => [...prevMessages, { content: help, role: "assistant" }]);
-      setVisualmessages((prevVisualMessages) => [...prevVisualMessages, { content: help, role: "assistant" }]); // FIXED
+      setVisualmessages((prevVisualMessages) => [...prevVisualMessages, { content: help, role: "assistant" }]);
     }
   };
 

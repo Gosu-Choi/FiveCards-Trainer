@@ -568,6 +568,7 @@ function Holdem() {
   }
 
   const raise = async(playerIndex) => {
+    console.log(`raise has been called by ${playerIndex}`)
     const betduty = async(i) => {
       await setPlayershouldbetfunc();
       call(i, true);
