@@ -75,6 +75,16 @@ function Holdem() {
   const opponentmodelsRef = useRef(opponentmodels);
   const raiseAmountRef = useRef(raiseAmount);
 
+  Object.defineProperty(moneysRef, "current", {
+    set(value) {
+      console.log("moneysRef.current changed:", value);
+      this._value = value;
+    },
+    get() {
+      return this._value;
+    },
+  });
+
   useEffect(() => {
     opponentmodelsRef.current = opponentmodels
   }, [opponentmodels])
@@ -856,7 +866,7 @@ function Holdem() {
                 setRaiseAmount(e.target.value);
                 raiseAmountRef.current = e.target.value;
             }}
-            placeholder={`${Math.max(potRef.current)} - ${moneysRef.current[0]}`}
+            placeholder={`Raise Amount`}
             style={{ fontSize: "12px" }}
             />
           </div>
