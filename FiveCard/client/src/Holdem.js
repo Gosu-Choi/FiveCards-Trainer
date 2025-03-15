@@ -247,11 +247,11 @@ function Holdem() {
             const newfeedbackforOM = await aifeedbackforOM(historyexport(5), opponentmodelsRef.current, playerCount, language, pokerstyle);
             setFeedbackforOM(newfeedbackforOM.feedback);
           }
-          setMoneys(prevMoneys => {
-            const newMoney = [...prevMoneys];
-            newMoney[winner] = newMoney[winner] + potRef.current;
-            return newMoney;
-          })
+          // setMoneys(prevMoneys => {
+          //   const newMoney = [...prevMoneys];
+          //   newMoney[winner] = newMoney[winner] + potRef.current;
+          //   return newMoney;
+          // })
           let temp = [...moneysRef.current];
           moneysRef.current[winner] = temp[winner] + potRef.current;
           setPot(0);
@@ -493,11 +493,9 @@ function Holdem() {
       return prevPot + moneyPaid;
     });
   
-    setMoneys(prevMoneys => {
-      const newMoneys = [...prevMoneys];
-      newMoneys[playerIndex] = newMoney;
-      return newMoneys;
-    });
+    let tempMoney = [...moneysRef.current];
+    tempMoney[playerIndex] = newMoney;
+    moneysRef.current = tempMoney
 
     setTurnmoneymanage(prevTurnmoneymanage => {
       const newTurnmoney = [...prevTurnmoneymanage];
@@ -858,7 +856,8 @@ function Holdem() {
                 setRaiseAmount(e.target.value);
                 raiseAmountRef.current = e.target.value;
             }}
-            placeholder={`Min: ${Math.max(potRef.current)} ~ Max: ${moneysRef.current[0]}`} // ✅ 회색 플레이스홀더 추가
+            placeholder={`Min: ${Math.max(potRef.current)} ~ Max: ${moneysRef.current[0]}`}
+            style={{ fontSize: "14px" }}
             />
           </div>
           <div className="action-buttons">
