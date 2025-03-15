@@ -174,7 +174,6 @@ function Holdem() {
         moneysRef.current = newMoney;
         return newMoney;
       });
-      console.log(moneysRef.current)
       setTurnmoneymanage(new Array(playerCount).fill(0));
       drawPokerTable();
       setExplanations(Array.from({ length: playerCount }, (_, i) => `해설 ${i + 1}`));
@@ -248,17 +247,10 @@ function Holdem() {
             const newfeedbackforOM = await aifeedbackforOM(historyexport(5), opponentmodelsRef.current, playerCount, language, pokerstyle);
             setFeedbackforOM(newfeedbackforOM.feedback);
           }
-          // setMoneys(prevMoneys => {
-          //   const newMoney = [...prevMoneys];
-          //   newMoney[winner] = newMoney[winner] + potRef.current;
-          //   return newMoney;
-          // })
-          console.log(moneysRef.current)
           let temp = [...moneysRef.current];
           moneysRef.current[winner] = temp[winner] + potRef.current;
           setPot(0);
           potRef.current = 0;
-          console.log(moneysRef.current)
         }
         if (activePlayersRef.current.filter(person => person === true).length > 1 && showFifthCardRef.current === false){
           await waitForOpen();
@@ -445,7 +437,6 @@ function Holdem() {
     setIs_first_operation(false);
     await change_indicator(0);
     setRaised(default_ante);
-
   };
 
   const fold = async (playerIndex) => {
@@ -487,25 +478,19 @@ function Holdem() {
 
   const call = async (playerIndex, is_from_raise=false) => {
     const moneyshouldpaid = raisedRef.current - turnmoneymanageRef.current[playerIndex];
-    console.log(moneysRef.current)
     const newMoney = ( moneysRef.current[playerIndex] - moneyshouldpaid > 0 ? moneysRef.current[playerIndex] - moneyshouldpaid : 0 );
     const moneyPaid = ( moneysRef.current[playerIndex] - moneyshouldpaid > 0 ? moneyshouldpaid : moneysRef.current[playerIndex] );
 
-    setPot(prevPot => {
-      const newPot = prevPot + moneyPaid;
-      potRef.current = newPot;
-      return prevPot + moneyPaid;
-    });
+    potRef.current = potRef.current + moneyPaid;
+
     console.log(moneysRef.current)
     let tempMoney = [...moneysRef.current];
     tempMoney[playerIndex] = newMoney;
     moneysRef.current = tempMoney
 
-    setTurnmoneymanage(prevTurnmoneymanage => {
-      const newTurnmoney = [...prevTurnmoneymanage];
-      newTurnmoney[playerIndex] = newTurnmoney[playerIndex] + moneyPaid;
-      return newTurnmoney;
-    });
+    let tempturnmoneymanage = [...turnmoneymanageRef.current];
+    tempturnmoneymanage[playerIndex] = tempturnmoneymanage[playerIndex] + moneyPaid;
+    turnmoneymanageRef.current = tempturnmoneymanage
 
     const duty = async() => {
       setPlayershouldbet(prevPlayershouldbet => {
@@ -855,7 +840,7 @@ function Holdem() {
             id="raiseAmount"
             type="number"
             className="raise-input"
-            value={raiseAmount}
+            value={raiseAmountRef.current}
             onChange={(e) => {
                 setRaiseAmount(e.target.value);
                 raiseAmountRef.current = e.target.value;
@@ -867,21 +852,26 @@ function Holdem() {
           <div className="action-buttons">
             <button
               className="btn btn-sm btn-warning action-button"
-              onClick={() => call(0)} // 플레이어가 콜
+              onClick={() => call(0)}
               disabled={indicatorRef.current !== 0}
             >
               Call
             </button>
             <button
               className="btn btn-sm btn-danger action-button"
-              onClick={() => raise(0)} // 플레이어가 레이즈
+              onClick = {() => {
+                  raise(0)
+                  setRaiseAmount("");
+                  raiseAmountRef.current = "";
+                }
+              }
               disabled={indicatorRef.current !== 0}
             >
               Raise
             </button>
             <button
               className="btn btn-sm btn-secondary action-button"
-              onClick={() => fold(0)} // 플레이어가 폴드
+              onClick={() => fold(0)} 
               disabled={indicatorRef.current !== 0}
             >
               Fold
