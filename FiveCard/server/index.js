@@ -56,7 +56,8 @@ app.post('/api/bot-communication', async (req, res) => {
     const response = await openai.chat.completions.create({
       model: "gpt-4o",
       messages: [
-        { role: "user", content: message }
+        { role: "system", content: message },
+        { role: "user", content: `Do the thing system requires.` }
       ],
       max_tokens: 500,
       temperature: 0.5,
