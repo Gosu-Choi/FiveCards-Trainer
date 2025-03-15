@@ -49,6 +49,7 @@ function Holdem() {
   const [feedbackforOM, setFeedbackforOM] = useState("After game over, feedback for opponent modeling will be shown here.");
   const { historization, historyexport, historyRef } = useHistory();
   const [pokerstyle, setPokerstyle] = useState([]);
+  const [raiseAmount, setRaiseAmount] = useState("");
 
   const { useremail, login, logout, isAuthenticated, playerMoney, refreshmoney } = useAuth();
   const playerchoiceRef = useRef(playerchoice);
@@ -72,6 +73,7 @@ function Holdem() {
   const communityRef = useRef(community);
   const mentsRef = useRef(ments);
   const opponentmodelsRef = useRef(opponentmodels);
+  const raiseAmountRef = useRef(raiseAmount);
 
   useEffect(() => {
     opponentmodelsRef.current = opponentmodels
@@ -568,39 +570,74 @@ function Holdem() {
   }
 
   const raise = async(playerIndex) => {
-    console.log(`raise has been called by ${playerIndex}`)
-    const betduty = async(i) => {
-      await setPlayershouldbetfunc();
-      call(i, true);
-    }
-
-    if (moneysRef.current[playerIndex] > potRef.current*0.5) {
-      setRaised(potRef.current*0.5);
-      raisedRef.current = potRef.current*0.5;
-      await betduty(playerIndex);
-    } else if (moneysRef.current[playerIndex] > raisedRef.current) { //All-in
-      setRaised(turnmoneymanageRef.current[playerIndex] + moneysRef.current[playerIndex]);
-      raisedRef.current = turnmoneymanageRef.current[playerIndex] + moneysRef.current[playerIndex];
-      await betduty(playerIndex);
-    } else {
-      await call(playerIndex);
-    }
-
-    setPlayerchoice(prevPlayerChoice => {
-      return prevPlayerChoice.map((choice, index) => {
+    if(playerIndex !== 0) {
+      const betduty = async(i) => {
+        await setPlayershouldbetfunc();
+        call(i, true);
+      }
+      
+      if (moneysRef.current[playerIndex] > raiseAmountRef.current) {
+        setRaised(raiseAmountRef.current);
+        raisedRef.current = raiseAmountRef.current;
+        await betduty(playerIndex);
+      } else if (moneysRef.current[playerIndex] > raisedRef.current) { //All-in
+        setRaised(turnmoneymanageRef.current[playerIndex] + moneysRef.current[playerIndex]);
+        raisedRef.current = turnmoneymanageRef.current[playerIndex] + moneysRef.current[playerIndex];
+        await betduty(playerIndex);
+      } else {
+        await call(playerIndex);
+      }
+  
+      setPlayerchoice(prevPlayerChoice => {
+        return prevPlayerChoice.map((choice, index) => {
+          if (index === playerIndex) {
+            return [...choice, 'raise'];
+          }
+          return choice;
+        });
+      }); 
+  
+      playerchoiceRef.current = playerchoiceRef.current.map((choice, index) => {
         if (index === playerIndex) {
           return [...choice, 'raise'];
         }
         return choice;
       });
-    }); 
-
-    playerchoiceRef.current = playerchoiceRef.current.map((choice, index) => {
-      if (index === playerIndex) {
-        return [...choice, 'raise'];
+    } else {
+      console.log(`raise has been called by ${playerIndex}`)
+      const betduty = async(i) => {
+        await setPlayershouldbetfunc();
+        call(i, true);
       }
-      return choice;
-    });
+  
+      if (moneysRef.current[playerIndex] > potRef.current*0.5) {
+        setRaised(potRef.current*0.5);
+        raisedRef.current = potRef.current*0.5;
+        await betduty(playerIndex);
+      } else if (moneysRef.current[playerIndex] > raisedRef.current) { //All-in
+        setRaised(turnmoneymanageRef.current[playerIndex] + moneysRef.current[playerIndex]);
+        raisedRef.current = turnmoneymanageRef.current[playerIndex] + moneysRef.current[playerIndex];
+        await betduty(playerIndex);
+      } else {
+        await call(playerIndex);
+      }
+  
+      setPlayerchoice(prevPlayerChoice => {
+        return prevPlayerChoice.map((choice, index) => {
+          if (index === playerIndex) {
+            return [...choice, 'raise'];
+          }
+          return choice;
+        });
+      }); 
+  
+      playerchoiceRef.current = playerchoiceRef.current.map((choice, index) => {
+        if (index === playerIndex) {
+          return [...choice, 'raise'];
+        }
+        return choice;
+      });
+    }
   };
 
   const drawCards = async() => {
@@ -809,6 +846,22 @@ function Holdem() {
           >
             Showdown
           </button>
+          <div className="raise-input-container">
+            <label htmlFor="raiseAmount">Raise Amount: </label>
+            <input
+              id="raiseAmount"
+              type="number"
+              className="raise-input"
+              value={raiseAmount}
+              onChange={(e) => {
+                  setRaiseAmount(e.target.value)
+                  raiseAmountRef.current = e.target.value
+                }
+              }
+              min={Math.max(potRef.current)} // 최소 레이즈 금액 설정
+              max={moneysRef.current[0]} // 플레이어 보유 금액을 초과할 수 없음
+            />
+          </div>
           <div className="action-buttons">
             <button
               className="btn btn-sm btn-warning action-button"
