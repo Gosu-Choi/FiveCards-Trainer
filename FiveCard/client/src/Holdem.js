@@ -140,10 +140,6 @@ function Holdem() {
   }, [playershouldbet]);
 
   useEffect(() => {
-    moneysRef.current = moneys;
-  }, [moneys]);
-
-  useEffect(() => {
     if (!isAuthenticated) {
       navigate('/login');
     }
@@ -158,7 +154,10 @@ function Holdem() {
   useEffect(() => {
     if (playerCount) {
       setOpponentmodels(new Array(playerCount-1).fill(''));
-      setPokerstyle(Array.from({ length: playerCount-1 }, () => Math.random() < 0.5 ? 'defensive' : 'offensive'));
+      const pokerStyles = ["tight-aggressive", "loose-aggressive", "tight-passive", "loose-passive"];
+      setPokerstyle(Array.from({ length: playerCount - 1 }, () => {
+        return pokerStyles[Math.floor(Math.random() * 4)];
+      }));
       setMents(new Array(playerCount).fill('Player Ments'));
       setActivePlayers(new Array(playerCount).fill(true));
       setPlayershouldbet(new Array(playerCount).fill(true));
@@ -167,6 +166,7 @@ function Holdem() {
       setHands(new Array(playerCount).fill([]));
       setCommunity(new Array(1).fill([]))
       setMoneys(new Array(playerCount).fill(100000));
+      moneysRef.current = (new Array(playerCount).fill(100000));
       setPlayerchoice(new Array(playerCount).fill([]));
       setMoneys(prevMoneys => {
         const newMoney = [...prevMoneys];
@@ -176,7 +176,7 @@ function Holdem() {
       });
       setTurnmoneymanage(new Array(playerCount).fill(0));
       drawPokerTable();
-      setExplanations(Array.from({ length: playerCount }, (_, i) => `해설 ${i + 1}`)); // 해설 개수를 변경할 수 있습니다.
+      setExplanations(Array.from({ length: playerCount }, (_, i) => `해설 ${i + 1}`));
       explanationsRef.current = Array.from({ length: playerCount }, (_, i) => `해설 ${i + 1}`);
     }
     console.log(pokerstyle)
@@ -856,8 +856,8 @@ function Holdem() {
                 setRaiseAmount(e.target.value);
                 raiseAmountRef.current = e.target.value;
             }}
-            placeholder={`Min: ${Math.max(potRef.current)} ~ Max: ${moneysRef.current[0]}`}
-            style={{ fontSize: "14px" }}
+            placeholder={`${Math.max(potRef.current)} - ${moneysRef.current[0]}`}
+            style={{ fontSize: "12px" }}
             />
           </div>
           <div className="action-buttons">
