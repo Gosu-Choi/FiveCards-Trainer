@@ -478,9 +478,9 @@ function Holdem() {
 
   const call = async (playerIndex, is_from_raise=false) => {
     const moneyshouldpaid = raisedRef.current - turnmoneymanageRef.current[playerIndex];
-    console.log(moneyshouldpaid)
     const newMoney = ( moneysRef.current[playerIndex] - moneyshouldpaid > 0 ? moneysRef.current[playerIndex] - moneyshouldpaid : 0 );
     const moneyPaid = ( moneysRef.current[playerIndex] - moneyshouldpaid > 0 ? moneyshouldpaid : moneysRef.current[playerIndex] );
+    console.log("newMoney: ", newMoney)
 
     potRef.current = potRef.current + moneyPaid;
 
