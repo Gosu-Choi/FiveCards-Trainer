@@ -571,14 +571,15 @@ function Holdem() {
 
   const raise = async(playerIndex) => {
     if(playerIndex !== 0) {
+      console.log(`raise has been called by ${playerIndex}`)
       const betduty = async(i) => {
         await setPlayershouldbetfunc();
         call(i, true);
       }
-      
-      if (moneysRef.current[playerIndex] > raiseAmountRef.current) {
-        setRaised(raiseAmountRef.current);
-        raisedRef.current = raiseAmountRef.current;
+
+      if (moneysRef.current[playerIndex] > potRef.current*0.5) {
+        setRaised(potRef.current*0.5);
+        raisedRef.current = potRef.current*0.5;
         await betduty(playerIndex);
       } else if (moneysRef.current[playerIndex] > raisedRef.current) { //All-in
         setRaised(turnmoneymanageRef.current[playerIndex] + moneysRef.current[playerIndex]);
@@ -610,9 +611,9 @@ function Holdem() {
         call(i, true);
       }
   
-      if (moneysRef.current[playerIndex] > potRef.current*0.5) {
-        setRaised(potRef.current*0.5);
-        raisedRef.current = potRef.current*0.5;
+      if (moneysRef.current[playerIndex] > raiseAmountRef.current) {
+        setRaised(raiseAmountRef.current);
+        raisedRef.current = raiseAmountRef.current;
         await betduty(playerIndex);
       } else if (moneysRef.current[playerIndex] > raisedRef.current) { //All-in
         setRaised(turnmoneymanageRef.current[playerIndex] + moneysRef.current[playerIndex]);
