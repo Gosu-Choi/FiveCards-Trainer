@@ -33,12 +33,13 @@ const ChatBot = ({ closeModal, chatContext, modalIndex, ments, language }) => {
     if (userInput.trim()) {
       const newMessages = [...messages, { content: userInput, role: "user" }];
       setVisualmessages(newMessages);
-      const help = await handleSendMessage([...messages, { content: userInput.concat(" Please give me your answer for essential 3-4 sentences in .").concat(language), role: "user" }]);
       setMessages(newMessages);
       setUserInput('');
-
+  
+      const help = await handleSendMessage([...messages, { content: userInput.concat(" Please give me your answer for essential 3-4 sentences in .").concat(language), role: "user" }]);
+  
       setMessages((prevMessages) => [...prevMessages, { content: help, role: "assistant" }]);
-      setVisualmessages(messages);
+      setVisualmessages((prevVisualMessages) => [...prevVisualMessages, { content: help, role: "assistant" }]); // FIXED
     }
   };
 

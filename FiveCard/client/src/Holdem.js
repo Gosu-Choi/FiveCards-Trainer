@@ -592,7 +592,7 @@ function Holdem() {
         }
         return choice;
       });
-    });
+    }); 
 
     playerchoiceRef.current = playerchoiceRef.current.map((choice, index) => {
       if (index === playerIndex) {

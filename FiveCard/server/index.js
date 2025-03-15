@@ -1,3 +1,5 @@
+import OpenAI from "openai";
+
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
@@ -8,6 +10,11 @@ const path = require('path');
 
 const app = express();
 const prisma = new PrismaClient();
+
+const openai = new OpenAI({
+  apiKey: process.env["OPENAI_API_KEY"],
+  dangerouslyAllowBrowser: true,
+});
 
 app.use(cors());
 app.use(bodyParser.json());
@@ -47,22 +54,16 @@ app.post('/api/bot-communication', async (req, res) => {
   console.log("Received message:", message); // 요청 수신 시 로그
 
   try {
-    const response = await axios.post('https://api.openai.com/v1/chat/completions', {
-      model: 'gpt-4o',
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o",
       messages: [
-        { role: 'user', content: message }
+        { role: "user", content: message }
       ],
       max_tokens: 500,
-      n: 1,
-      stop: null,
       temperature: 0.5,
-    }, {
-      headers: {
-        'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`, // Bearer 토큰 사용
-        'Content-Type': 'application/json',
-      },
     });
-    res.json({ response: response.data.choices[0].message.content });
+
+    res.json({ response: response.choices[0].message.content });
   } catch (error) {
     res.status(500).json({ error: 'Something went wrong', details: error.message });
   }
@@ -73,20 +74,14 @@ app.post('/api/bot-help', async (req, res) => {
   console.log("Received message:", message); // 요청 수신 시 로그
 
   try {
-    const response = await axios.post('https://api.openai.com/v1/chat/completions', {
-      model: 'gpt-4o',
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o",
       messages: message,
       max_tokens: 150,
-      n: 1,
-      stop: null,
       temperature: 0.5,
-    }, {
-      headers: {
-        'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`, // Bearer 토큰 사용
-        'Content-Type': 'application/json',
-      },
     });
-    res.json({ response: response.data.choices[0].message.content });
+
+    res.json({ response: response.choices[0].message.content });
   } catch (error) {
     res.status(500).json({ error: 'Something went wrong', details: error.message });
   }
