@@ -481,20 +481,14 @@ function Holdem() {
     const newMoney = ( moneysRef.current[playerIndex] - moneyshouldpaid > 0 ? moneysRef.current[playerIndex] - moneyshouldpaid : 0 );
     const moneyPaid = ( moneysRef.current[playerIndex] - moneyshouldpaid > 0 ? moneyshouldpaid : moneysRef.current[playerIndex] );
     
-
     potRef.current = potRef.current + moneyPaid;
 
     console.log("moneysRef.current1: ", moneysRef.current)
     console.log("newMoney1: ", newMoney)
-    let tempMoney = [...moneysRef.current];
-    tempMoney[playerIndex] = newMoney;
-    moneysRef.current = tempMoney
+    moneysRef.current[playerIndex] = newMoney;
     console.log("moneysRef.current2: ", moneysRef.current)
-    console.log("tempMoney2: ", tempMoney)
 
-    let tempturnmoneymanage = [...turnmoneymanageRef.current];
-    tempturnmoneymanage[playerIndex] = tempturnmoneymanage[playerIndex] + moneyPaid;
-    turnmoneymanageRef.current = tempturnmoneymanage
+    turnmoneymanageRef.current[playerIndex] = turnmoneymanageRef.current[playerIndex] + moneyPaid;
 
     const duty = async() => {
       setPlayershouldbet(prevPlayershouldbet => {
