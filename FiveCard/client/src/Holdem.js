@@ -170,7 +170,7 @@ function Holdem() {
       setPlayerchoice(new Array(playerCount).fill([]));
       setMoneys(prevMoneys => {
         const newMoney = [...prevMoneys];
-        newMoney[0] = playerMoney;
+        newMoney[0] = parseInt(playerMoney, 10);;
         moneysRef.current = newMoney;
         return newMoney;
       });
