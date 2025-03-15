@@ -250,9 +250,10 @@ function Holdem() {
           setMoneys(prevMoneys => {
             const newMoney = [...prevMoneys];
             newMoney[winner] = newMoney[winner] + potRef.current;
-            moneysRef.current = newMoney;
             return newMoney;
           })
+          let temp = [...moneysRef.current];
+          moneysRef.current[winner] = temp[winner] + potRef.current;
           setPot(0);
           potRef.current = 0;
         }
@@ -848,19 +849,16 @@ function Holdem() {
             Showdown
           </button>
           <div className="raise-input-container">
-            <label htmlFor="raiseAmount">Raise Amount: </label>
             <input
-              id="raiseAmount"
-              type="number"
-              className="raise-input"
-              value={raiseAmount}
-              onChange={(e) => {
-                  setRaiseAmount(e.target.value)
-                  raiseAmountRef.current = e.target.value
-                }
-              }
-              min={Math.max(potRef.current)} // 최소 레이즈 금액 설정
-              max={moneysRef.current[0]} // 플레이어 보유 금액을 초과할 수 없음
+            id="raiseAmount"
+            type="number"
+            className="raise-input"
+            value={raiseAmount}
+            onChange={(e) => {
+                setRaiseAmount(e.target.value);
+                raiseAmountRef.current = e.target.value;
+            }}
+            placeholder={`Min: ${Math.max(potRef.current)} ~ Max: ${moneysRef.current[0]}`} // ✅ 회색 플레이스홀더 추가
             />
           </div>
           <div className="action-buttons">
