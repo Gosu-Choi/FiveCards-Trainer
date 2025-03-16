@@ -185,7 +185,7 @@ const aiDecisionHoldem = async (indicator, survivor, hands, money, pot, is_final
     ],
     "additionalProperties": false
   }
-  
+  console.log(schema)
   const decision_notjson = await handleSendMessage(mention, schema);
   const decision = JSON.parse(decision_notjson)
   return new Promise((resolve) => {
@@ -300,6 +300,7 @@ const DecisionFBHoldem = async (indicator, survivor, hands, money, pot, is_final
     "required": ["action", "amount", "explanation"],
     "additionalProperties": false
   };
+  console.log(schema)
 
   const decision_notjson = await handleSendMessage(mention, schema);
   const decision = JSON.parse(decision_notjson)

@@ -54,7 +54,7 @@ app.post('/api/bot-communication', async (req, res) => {
 
   try {
     const requestBody = {
-      model: "gpt-4o", 
+      model: "gpt-4o-mini", 
       messages: [
         { role: "system", content: message },
         { role: "user", content: "Do the thing system requires." }
