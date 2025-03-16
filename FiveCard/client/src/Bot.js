@@ -211,8 +211,8 @@ const generateAmountEnum = (money, pot, indicator) => {
     estimatedCount = (maxTempAmount - minTempAmount) / step;
   }
 
-  const minAmount = Math.ceil((pot * 0.5) / stepSizes) * stepSizes;
-  const maxAmount = Math.floor(money[indicator] / stepSizes) * stepSizes;
+  const minAmount = Math.ceil((pot * 0.5) / step) * step;
+  const maxAmount = Math.floor(money[indicator] / step) * step;
 
   let amountEnum = [0];
   for (let amount = minAmount; amount <= maxAmount; amount += step) {
@@ -221,9 +221,6 @@ const generateAmountEnum = (money, pot, indicator) => {
   if (amountEnum.length === 1) {
     amountEnum.push(maxAmount);
   }
-  console.log("money array ", money)
-  console.log("pot ", pot)
-  console.log("amountEnum ", amountEnum)
   return amountEnum;
 }
 
