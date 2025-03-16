@@ -187,7 +187,6 @@ const aiDecisionHoldem = async (indicator, survivor, hands, money, pot, is_final
   }//generateAmountEnum(money, pot, indicator)
   
   const decision = await handleSendMessage(mention, schema);
-  console.log("Bots Decision (25):", decision)
   return new Promise((resolve) => {
     setTimeout(() => {
       resolve({ decision, mention });
@@ -303,7 +302,6 @@ const DecisionFBHoldem = async (indicator, survivor, hands, money, pot, is_final
   };
 
   const decision = await handleSendMessage(mention, schema);
-  console.log("Feedback (25):", decision)
   return new Promise((resolve) => {
     setTimeout(() => {
       resolve({ decision, mention });
