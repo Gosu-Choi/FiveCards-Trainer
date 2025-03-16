@@ -170,8 +170,8 @@ const aiDecisionHoldem = async (indicator, survivor, hands, money, pot, is_final
       },
       "amount": {
         "type": "number",
-        "enum": [1, 2], 
-        "description": "You should fill it 0 when you do fold or call. The bet amount in chips, increasing in increments of 100. The minimum value is at least half the pot, and the maximum value is the player's remaining stack."
+        "enum": generateAmountEnum(money, pot, indicator), 
+        "description": "You should fill it 0 when you do fold or call. The bet amount in chips. The minimum value is at least half the pot, and the maximum value is the player's remaining stack."
       },
       "explanation": {
         "type": "string",
@@ -184,9 +184,10 @@ const aiDecisionHoldem = async (indicator, survivor, hands, money, pot, is_final
       "explanation"
     ],
     "additionalProperties": false
-  }//generateAmountEnum(money, pot, indicator)
+  }
   
-  const decision = await handleSendMessage(mention, schema);
+  const decision_notjson = await handleSendMessage(mention, schema);
+  const decision = JSON.parse(decision_notjson)
   return new Promise((resolve) => {
     setTimeout(() => {
       resolve({ decision, mention });
@@ -220,7 +221,9 @@ const generateAmountEnum = (money, pot, indicator) => {
   if (amountEnum.length === 1) {
     amountEnum.push(maxAmount);
   }
-
+  console.log("money array ", money)
+  console.log("pot ", pot)
+  console.log("amountEnum ", amountEnum)
   return amountEnum;
 }
 
@@ -289,7 +292,7 @@ const DecisionFBHoldem = async (indicator, survivor, hands, money, pot, is_final
       },
       "amount": {
         "type": "number",
-        "enum": [1, 2],
+        "enum": generateAmountEnum(money, pot, indicator),
         "description": "You should fill it 0 when you do fold or call. The bet amount in chips, increasing in increments of 100. The minimum value is at least half the pot, and the maximum value is the player's remaining stack."
       },
       "explanation": {

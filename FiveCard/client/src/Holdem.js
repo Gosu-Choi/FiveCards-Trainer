@@ -363,7 +363,7 @@ function Holdem() {
       if (indicatorRef.current === 0){
         await waitForPlayerDecision();
         const dec = await DecisionFBHoldem(0, activePlayersRef.current, handsRef.current, moneysRef.current, potRef.current, (communityRef.current[0].length === 5), playerchoiceRef.current, raisedRef.current, communityRef.current[0], playerchoiceRef.current, language);
-        const advice = "You should have done ".concat(dec.decision.action).concat(` ${dec.decision.amount !== 0 ? `` : dec.decision.amount}. `).concat(dec.decision.explanation);;
+        const advice = "You should have done ".concat(dec.decision.action).concat(`${dec.decision.amount !== 0 ? `` : ` ${dec.decision.amount}`}. `).concat(dec.decision.explanation);;
         setMents(prevMents => {
           const newMents = [...prevMents]
           newMents[indicatorRef.current] = dec.mention;
