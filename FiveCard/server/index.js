@@ -49,23 +49,36 @@ app.post('/api/signup', async (req, res) => {
 });
 
 app.post('/api/bot-communication', async (req, res) => {
-  const { message } = req.body;
-  console.log("Received message:", message); // 요청 수신 시 로그
+  const { message, schema } = req.body;
+  console.log("Received message:", message);
+  if (schema) console.log("Received schema:", JSON.stringify(schema, null, 2)); // schema 존재 시 로깅
 
   try {
-    const response = await openai.chat.completions.create({
-      model: "gpt-4o",
+    const requestBody = {
+      model: "gpt-4o-mini", // 원하는 모델 사용
       messages: [
         { role: "system", content: message },
-        { role: "user", content: `Do the thing system requires.` }
+        { role: "user", content: "Do the thing system requires." }
       ],
       max_tokens: 500,
       temperature: 0.5,
-    });
+    };
 
-    res.json({ response: response.choices[0].message.content });
+    if (schema) {
+      requestBody.response_format = {
+        type: "json_schema",
+        json_schema: {
+          name: "custom_response_schema",
+          strict: true,
+          schema: schema 
+        }
+      };
+    }
+
+    const response = await openai.chat.completions.create(requestBody);
+    res.json(response.choices[0].message.content);
   } catch (error) {
-    res.status(500).json({ error: 'Something went wrong', details: error.message });
+    res.status(500).json({ error: "Something went wrong", details: error.message });
   }
 });
 

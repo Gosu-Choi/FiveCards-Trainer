@@ -249,7 +249,6 @@ function Holdem() {
           }
           let temp = [...moneysRef.current];
           moneysRef.current[winner] = temp[winner] + potRef.current;
-          setPot(0);
           potRef.current = 0;
         }
         if (activePlayersRef.current.filter(person => person === true).length > 1 && showFifthCardRef.current === false){
@@ -364,7 +363,7 @@ function Holdem() {
       if (indicatorRef.current === 0){
         await waitForPlayerDecision();
         const dec = await DecisionFBHoldem(0, activePlayersRef.current, handsRef.current, moneysRef.current, potRef.current, (communityRef.current[0].length === 5), playerchoiceRef.current, raisedRef.current, communityRef.current[0], playerchoiceRef.current, language);
-        const advice = "You should have done ".concat(dec.decision);
+        const advice = "You should have done ".concat(dec.decision.action).concat(` ${dec.decision.amount !== 0 ? `` : dec.decision.amount}. `).concat(dec.decision.explanation);;
         setMents(prevMents => {
           const newMents = [...prevMents]
           newMents[indicatorRef.current] = dec.mention;
@@ -385,14 +384,15 @@ function Holdem() {
           mentsRef.current = newMents;
           return newMents;
         })
-        const deci = dec.decision.split('.')[0];
+        const deci = dec.decision.action;
         setExplanations(prevExplanation => {
           const prevE = [...prevExplanation];
-          prevE[indicatorRef.current] = "Bot ".concat(indicatorRef.current).concat("'s rationale for the decision: ").concat(dec.decision);
+          prevE[indicatorRef.current] = "Bot ".concat(indicatorRef.current).concat("'s rationale for the decision: ").concat(dec.decision.action).concat(` ${dec.decision.amount !== 0 ? `` : dec.decision.amount}. `).concat(dec.decision.explanation);
           explanationsRef.current = prevE;
           return prevE;
         })
         if (deci === 'Raise') {
+          raisedRef.current = dec.decision.amount;
           await raise(indicatorRef.current);
         } else if (deci === 'Fold') {
           await fold(indicatorRef.current);
@@ -433,7 +433,7 @@ function Holdem() {
     setPlayershouldbet(new Array(playerCount).fill(true));
     setTurnmoneymanage(new Array(playerCount).fill(0));
     setIs_beginning(true);
-    setPot(0);
+    potRef.current = 0
     setIs_first_operation(false);
     await change_indicator(0);
     setRaised(default_ante);

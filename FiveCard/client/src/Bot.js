@@ -1,20 +1,58 @@
 import { determineWinner, facemaker } from './pokerHands';
 
-const handleSendMessage = async (message) => {
+const handleSendMessage = async (message, schema = null) => {
+  const requestBody = { message };
+  
+  if (schema) {
+    requestBody.schema = schema;
+  }
+
   const res = await fetch('/api/bot-communication', { 
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ message })
-    });
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(requestBody)
+  });
+
   const data = await res.json();
-  if (res.status === 500){
+
+  if (res.status === 500) {
     return data.details;
   } else {
     return data.response;
   }
-}
+};
+
+const cardMap = {
+  "2H": "2-Hearts", "3H": "3-Hearts", "4H": "4-Hearts", "5H": "5-Hearts",
+  "6H": "6-Hearts", "7H": "7-Hearts", "8H": "8-Hearts", "9H": "9-Hearts",
+  "TH": "10-Hearts", "JH": "Jack-Hearts", "QH": "Queen-Hearts",
+  "KH": "King-Hearts", "AH": "Ace-Hearts",
+
+  "2D": "2-Diamonds", "3D": "3-Diamonds", "4D": "4-Diamonds", "5D": "5-Diamonds",
+  "6D": "6-Diamonds", "7D": "7-Diamonds", "8D": "8-Diamonds", "9D": "9-Diamonds",
+  "TD": "10-Diamonds", "JD": "Jack-Diamonds", "QD": "Queen-Diamonds",
+  "KD": "King-Diamonds", "AD": "Ace-Diamonds",
+
+  "2C": "2-Clubs", "3C": "3-Clubs", "4C": "4-Clubs", "5C": "5-Clubs",
+  "6C": "6-Clubs", "7C": "7-Clubs", "8C": "8-Clubs", "9C": "9-Clubs",
+  "TC": "10-Clubs", "JC": "Jack-Clubs", "QC": "Queen-Clubs",
+  "KC": "King-Clubs", "AC": "Ace-Clubs",
+
+  "2S": "2-Spades", "3S": "3-Spades", "4S": "4-Spades", "5S": "5-Spades",
+  "6S": "6-Spades", "7S": "7-Spades", "8S": "8-Spades", "9S": "9-Spades",
+  "TS": "10-Spades", "JS": "Jack-Spades", "QS": "Queen-Spades",
+  "KS": "King-Spades", "AS": "Ace-Spades"
+};
+
+const convertCard = (card) => {
+  return cardMap[card] || card;
+};
+
+const convertCardList = (cards) => {
+  return cards.map(convertCard).join(", ");
+};
 
 const aifeedbackforOM = async(history, model, playerCount, language, style) => {
   let mention = "I am playing TEXAS HOLD'EM. And I have established opponent modeling in this game, and I want to receive your feedback for it. I will give you three informations for each player. Opened cards for recent 5 games (including community cards and if open, the holding card of that player) and following betting records for each game, and my modeling of that player. ";
@@ -61,69 +99,197 @@ const aifeedbackforOM = async(history, model, playerCount, language, style) => {
 }
 
 const aiDecisionHoldem = async (indicator, survivor, hands, money, pot, is_final, raised, community, choicehistory, languageset, style) => {
-  if (money[indicator] === 0){
-    const decision = "Call.";
+  if (money[indicator] === 0) {
     return new Promise((resolve) => {
-      setTimeout(() => { 
-        resolve({ decision });
+      setTimeout(() => {
+        resolve({ decision: "Call." });
       }, 0);
     });
+  } 
+  
+  let mention = `You are playing TEXAS HOLD'EM. Analyze the current game state and decide your best action.`;
+  
+  // AI's Hole Cards
+  mention += `\n### Your Hand:`;
+  mention += `\n- Hole cards: ${convertCardList(hands[indicator])}.`;
+  
+  // Community Cards
+  if (community.length > 0) {
+    mention += `\n\n### Community Cards:`;
+    mention += `\n- The board is: ${convertCardList(community)}.`;
+    mention += `\n- And you can guess about other opponents' hole cards with following information.`
+    // mention += `\n- Possible hands other players might have based on the board: [Analyze their potential hands].`;
   } else {
-    let mention = "You are playing TEXAS HOLD'EM. You should consider your hands as well as the community cards. Your hand is ".concat(hands[indicator]).concat(community.length > 0 ? ", and the community cards are sequentially " : ", and this is pre-flop, so the community cards are not shown yet.").concat(community).concat(community.length > 0 ? ", so the first three cards are flops. And you have " : ". And you have ").concat(money[indicator]).concat(" as table money. Other players' action on each betting phase are following. ");
-    for (let i = 0; i<survivor.length; i++){
-      if(survivor[i] && i !== indicator && community.length > 0 && choicehistory[i].includes(1)){
-        mention = mention.concat("Player ").concat(i).concat("'s pre-flop action was ").concat(choicehistory[i].slice(0, choicehistory[i].indexOf(1)));
-        if(choicehistory[i].includes(2)){
-          mention = mention.concat(", flop action was ").concat(choicehistory[i].slice(choicehistory[i].indexOf(1)+1, choicehistory[i].indexOf(2)));
-          if(choicehistory[i].includes(3)){
-            mention = mention.concat(", turn action was ").concat(choicehistory[i].slice(choicehistory[i].indexOf(2)+1, choicehistory[i].indexOf(3)));
-            if(choicehistory[i].includes(4)){
-              mention = mention.concat(", river action was ").concat(choicehistory[i].slice(choicehistory[i].indexOf(3)+1, choicehistory[i].indexOf(4)));
-            }
-          }
-        }
-        mention = mention.concat(". And this player has ").concat(money[i]).concat(" as table money. ");
-      }
-    }
-    mention = mention.concat(" And you should be aware of that players including you can do bluffing when environment is good. Would you call or fold or raise from ").concat(style).concat(" perspective? Just answer with simple one word with mark so like 'Fold.' or 'Raise.' or 'Call.' for this first question. If you want to raise, you should bet 1/2 times of the pot(stake). Now the pot money is ").concat(pot).concat(". If you want to call, you should bet ").concat(raised === 0 ? "nothing. It is extremely preferred to call or raise when you should bet nothing." : raised);
-    mention = mention.concat(" You should use all of the strategy available and all the environment including enemies' hands and table moneys, I mean, you must use Game Theory Optimal. And after give me your decision like 'Fold.' or 'Raise.' or 'Call.', give me your rationale and strategy why you make that decision for 3-4 simple ").concat(languageset).concat(" sentences about the logic including the possibility that a player makes strong hand which is able to beat your hand and the probability based on Game Theory Optimal, without any special marks. Remember, don't simply say that you followed game theory optimal, but explain it with detailed logic (including criteria in terms of hands to decide something) using probability based on Game Theory Optimal so that I can easily understand it.");
-    if (is_final) {
-      mention = mention.concat(" And this is final phase of betting, you are not able to receive additional card. And you should recognize that community cards would be shared and if flush or straight is able to be established only with community cards then other players also can have it.");
-    }
-    const decision = await handleSendMessage(mention);
-    return new Promise((resolve) => {
-      setTimeout(() => { 
-        resolve({ decision, mention });
-      }, 0);
-    });
+    mention += `\n- This is pre-flop, so community cards are not revealed yet.`;
   }
+  
+  // Betting Information
+  mention += `\n\n### Betting Information:`;
+  mention += `\n- Your current stack: ${money[indicator]}.`;
+  mention += `\n- Pot size: ${pot}.`;
+  mention += `\n- Amount to call: ${raised === 0 ? "nothing (free call)" : raised}.`;
+  
+  // Opponents' Actions
+  mention += `\n\n### Opponent Actions:`;
+  for (let i = 0; i < survivor.length; i++) {
+    if (survivor[i] && i !== indicator) {
+      mention += `\n- Player ${i}: `;
+      if (choicehistory[i].includes(1)) mention += `Pre-flop: ${choicehistory[i].slice(0, choicehistory[i].indexOf(1))}.`;
+      if (choicehistory[i].includes(2)) mention += ` Flop: ${choicehistory[i].slice(choicehistory[i].indexOf(1) + 1, choicehistory[i].indexOf(2))}.`;
+      if (choicehistory[i].includes(3)) mention += ` Turn: ${choicehistory[i].slice(choicehistory[i].indexOf(2) + 1, choicehistory[i].indexOf(3))}.`;
+      if (choicehistory[i].includes(4)) mention += ` River: ${choicehistory[i].slice(choicehistory[i].indexOf(3) + 1, choicehistory[i].indexOf(4))}.`;
+      mention += ` Stack: ${money[i]}.`;
+    }
+  }
+  
+  mention += `\n\n### Decision Making:`;
+  mention += `\n- You should pretend to be a ${style} holdem player. (Avoid mentioning about it in your answer.)`;
+  mention += `\n- Do you currently have a strong hand, or are you drawing?`;
+  mention += `\n- What can you do with this situation? What's are you expecting with it? Do you want to bluff or not, value bet or fold or other thing?`;
+  mention += `\n- Based on your plan and strategy, should you call, fold, or raise?`;
+  mention += `\n- If you raise, what is your optimal bet size?`;
+  mention += `\n- If you call, what are the possible future scenarios?`;
+  
+  if (is_final) {
+    mention += `\n\nThis is the final phase of betting. No more cards will be dealt. Recognize that if a flush or straight is possible using only the community cards, other players may also have it.`;
+  }
+  
+  mention += `\n\n**Now, choose your action:**`;
+  mention += `\n- Reply only with 'Fold.', 'Call.', or 'Raise.' first. (If raising, specify amount).`;
+  mention += `\n- After your decision, explain your reasoning in 3-4 ${languageset} sentences using probability and logic based on GTO or exploitative poker theory.`;
+
+  let schema = {
+    "type": "object",
+    "properties": {
+      "action": {
+        "type": "string",
+        "enum": [
+          "Call", "Fold", "Raise"
+        ],
+        "description": "The player's chosen action for this betting round. 'Call' matches the current bet, 'Fold' forfeits the hand, and 'Raise' increases the bet."
+      },
+      "amount": {
+        "type": "number",
+        "enum": generateAmountEnum(money, pot, indicator),
+        "description": "You should fill it 0 when you do fold or call. The bet amount in chips, increasing in increments of 100. The minimum value is at least half the pot, and the maximum value is the player's remaining stack."
+      },
+      "explanation": {
+        "type": "string",
+        "description": "A brief strategic explanation justifying the chosen action, including hand strength, opponent behavior, and game theory principles."
+      }
+    },
+    "required": [
+      "action",
+      "amount",
+      "explanation"
+    ],
+    "additionalProperties": false
+  }
+  
+  const decision = await handleSendMessage(mention, schema);
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve({ decision, mention });
+    }, 0);
+  });
+};
+
+const generateAmountEnum = (money, pot, indicator) => {
+  const minAmount = Math.ceil((pot * 0.5) / 100) * 100;
+  const maxAmount = Math.floor(money[indicator] / 100) * 100; 
+
+  let amountEnum = [0];
+  for (let amount = minAmount; amount <= maxAmount; amount += 100) {
+    amountEnum.push(amount);
+  }
+
+  if (amountEnum.length === 1) {
+    amountEnum.push(maxAmount);
+  }
+
+  return amountEnum;
 };
 
 const DecisionFBHoldem = async (indicator, survivor, hands, money, pot, is_final, choice, raised, community, choicehistory, languageset) => {
-  let mention = "I am playing TEXAS HOLD'EM. You should consider your hands as well as the community cards. My hand is ".concat(hands[indicator]).concat(community.length > 0 ? ", and the community cards are sequentially " : ", and this is pre-flop, so the community cards are not shown yet.").concat(community).concat(community.length > 0 ? ", so the first three cards are flops. And I have " : ". And I have ").concat(money[indicator]).concat(" as table money. Other players' action on each betting phase are following. ");
-  for (let i = 0; i<survivor.length; i++){
-    if(survivor[i] && i !== indicator && community.length > 0 && choicehistory[i].includes(1)){
-      mention = mention.concat("Player ").concat(i).concat("'s pre-flop action was ").concat(choicehistory[i].slice(0, choicehistory[i].indexOf(1)));
-      if(choicehistory[i].length > 1 && choicehistory[i].includes(2)){
-        mention = mention.concat(", flop action was ").concat(choicehistory[i].slice(choicehistory[i].indexOf(1)+1, choicehistory[i].indexOf(2)));
-        if(choicehistory[i].length > 2 && choicehistory[i].includes(3)){
-          mention = mention.concat(", turn action was ").concat(choicehistory[i].slice(choicehistory[i].indexOf(2)+1, choicehistory[i].indexOf(3)));
-          if(choicehistory[i].length > 3 && choicehistory[i].includes(4)){
-            mention = mention.concat(", river action was ").concat(choicehistory[i].slice(choicehistory[i].indexOf(3)+1, choicehistory[i].indexOf(4)));
-          }
-        }
-      }
-      mention = mention.concat(". And this player has ").concat(money[i]).concat(" as table money. ");
+  let mention = `I am playing TEXAS HOLD'EM. Analyze my decision and provide feedback on whether it was correct.`; 
+
+  // AI's Hole Cards
+  mention += `\n\n### My Hand:`;
+  mention += `\n- Hole cards: ${convertCardList(hands[indicator])}.`;
+
+  // Community Cards
+  if (community.length > 0) {
+    mention += `\n\n### Community Cards:`;
+    mention += `\n- The board is: ${convertCardList(community)}.`;
+    mention += `\n- You should assess my hand strength and evaluate possible opponent hands based on this board.`;
+  } else {
+    mention += `\n- This is pre-flop, so community cards are not revealed yet.`;
+  }
+
+  // Betting Information
+  mention += `\n\n### Betting Information:`;
+  mention += `\n- My current stack: ${money[indicator]}.`;
+  mention += `\n- Pot size: ${pot}.`;
+  mention += `\n- Amount to call: ${raised === 0 ? "nothing (free call)" : raised}.`;
+
+  // Opponents' Actions
+  mention += `\n\n### Opponent Actions:`;  
+  for (let i = 0; i < survivor.length; i++) {
+    if (survivor[i] && i !== indicator) {
+      mention += `\n- Player ${i}: `;
+      if (choicehistory[i].includes(1)) mention += `Pre-flop: ${choicehistory[i].slice(0, choicehistory[i].indexOf(1))}.`;
+      if (choicehistory[i].includes(2)) mention += ` Flop: ${choicehistory[i].slice(choicehistory[i].indexOf(1) + 1, choicehistory[i].indexOf(2))}.`;
+      if (choicehistory[i].includes(3)) mention += ` Turn: ${choicehistory[i].slice(choicehistory[i].indexOf(2) + 1, choicehistory[i].indexOf(3))}.`;
+      if (choicehistory[i].includes(4)) mention += ` River: ${choicehistory[i].slice(choicehistory[i].indexOf(3) + 1, choicehistory[i].indexOf(4))}.`;
+      mention += ` Stack: ${money[i]}.`;
     }
   }
-  mention = mention.concat("I chose to ").concat(choice[0][choice[0].length-1]).concat(". How do you feedback for my decision? If you were I, What would you do call or fold or raise? And you should be aware of that players can do bluffing. First, just answer with simple one word like 'Fold.' or 'Raise.' or 'Call.' for this first question. And please give me very practical idea for 3-4 simple ").concat(languageset).concat(" sentences sentences about the logic including player who has the most strong visual hand and the possibility that the player makes that strong hand, without any special marks. (e.g. 'Player 3 can make hearts flush if the hidden card is heart, and that probability would be about ~%'). Remember, don't simply say that you followed game theory optimal, but explain it with detailed logic (including criteria in terms of hands to decide something) using probability based on Game Theory Optimal so that I can easily understand it. If you want to raise, you should bet 1/2 times of the pot. Now the pot money is ").concat(pot).concat(". If you want to call, you should bet ").concat(raised === 0 ? "nothing. It is extremely preferred to call or raise when you should bet nothing." : raised);
-  mention = mention.concat(" You should use all of the five poker strategy available and all the environment including enemies' hands and table moneys, I mean, you must use Game Theory Optimal and give me your betting rationale based on that.");
+
+  // Player's Action and Request for Feedback
+  mention += `\n\n### My Decision:`;
+  mention += `\n- I chose to **${choice[0][choice[0].length - 1]}**.`;  
+  mention += `\n- How do you evaluate this decision? If you were in my position, would you Call, Fold, or Raise?`;
+
+  mention += `\n\n### Decision Making & Feedback:`;
+  mention += `\n- Consider my current position and evaluate the likelihood that my hand is strong or weak.`;
+  mention += `\n- Which player has the strongest possible hand based on the available cards?`;
+  mention += `\n- What is the probability that an opponent has a better hand than mine? Provide reasoning using probability and logical deduction.`;
+  mention += `\n- If you were to raise, what would be the optimal bet size based on GTO or exploitative strategy?`;
+  mention += `\n- If you call, what are the possible future outcomes?`;
+
   if (is_final) {
-    mention = mention.concat(" And this is final phase of betting, I am not able to receive additional card. And you should recognize that community cards would be shared and if flush or straight is able to be established only with community cards then other players also can have it.");
+    mention += `\n\nThis is the final phase of betting. No more cards will be dealt. Consider the possibility that community cards alone might form a strong hand that multiple players can share.`;
   }
-  const decision = await handleSendMessage(mention);
+
+  mention += `\n\n**Now, provide your response:**`;
+  mention += `\n- Reply only with 'Fold.', 'Call.', or 'Raise.' first. (If raising, specify amount).`;
+  mention += `\n- Then, provide a strategic explanation in 3-4 ${languageset} sentences using probability and logic based on GTO or exploitative poker theory.`;
+
+  let schema = {
+    "type": "object",
+    "properties": {
+      "action": {
+        "type": "string",
+        "enum": ["Call", "Fold", "Raise"],
+        "description": "Your evaluation of my action. Should I have called, folded, or raised?"
+      },
+      "amount": {
+        "type": "number",
+        "enum": generateAmountEnum(money, pot, indicator),
+        "description": "You should fill it 0 when you do fold or call. The bet amount in chips, increasing in increments of 100. The minimum value is at least half the pot, and the maximum value is the player's remaining stack."
+      },
+      "explanation": {
+        "type": "string",
+        "description": "A concise strategic explanation justifying your recommendation, considering opponent hands, probability, and poker strategy."
+      }
+    },
+    "required": ["action", "amount", "explanation"],
+    "additionalProperties": false
+  };
+
+  const decision = await handleSendMessage(mention, schema);
   return new Promise((resolve) => {
-    setTimeout(() => { 
+    setTimeout(() => {
       resolve({ decision, mention });
     }, 0);
   });
