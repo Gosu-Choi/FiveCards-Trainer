@@ -363,7 +363,7 @@ function Holdem() {
       if (indicatorRef.current === 0){
         await waitForPlayerDecision();
         const dec = await DecisionFBHoldem(0, activePlayersRef.current, handsRef.current, moneysRef.current, potRef.current, (communityRef.current[0].length === 5), playerchoiceRef.current, raisedRef.current, communityRef.current[0], playerchoiceRef.current, language);
-        const advice = "You should have done ".concat(dec.decision.action).concat(`${dec.decision.amount === 0 ? `` : ` ${dec.decision.amount}`}. `).concat(dec.decision.explanation);;
+        const advice = `You should have done ${dec.decision.action} ${dec.decision.amount === 0 ? '' : dec.decision.amount}. ${dec.decision.explanation}`
         setMents(prevMents => {
           const newMents = [...prevMents]
           newMents[indicatorRef.current] = dec.mention;
@@ -387,7 +387,7 @@ function Holdem() {
         const deci = dec.decision.action;
         setExplanations(prevExplanation => {
           const prevE = [...prevExplanation];
-          prevE[indicatorRef.current] = "Bot ".concat(indicatorRef.current).concat("'s rationale for the decision: ").concat(dec.decision.action).concat(` ${dec.decision.amount === 0 ? `` : dec.decision.amount}. `).concat(dec.decision.explanation);
+          prevE[indicatorRef.current] = `Bot ${indicatorRef.current}'s rationale for the decision: ${dec.decision.action} ${dec.decision.amount === 0 ? '' : dec.decision.amount}. ${dec.decision.explanation}`
           explanationsRef.current = prevE;
           return prevE;
         })
