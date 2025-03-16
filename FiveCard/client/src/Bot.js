@@ -170,7 +170,7 @@ const aiDecisionHoldem = async (indicator, survivor, hands, money, pot, is_final
       },
       "amount": {
         "type": "number",
-        "enum": generateAmountEnum(money, pot, indicator),
+        "enum": [1, 2], 
         "description": "You should fill it 0 when you do fold or call. The bet amount in chips, increasing in increments of 100. The minimum value is at least half the pot, and the maximum value is the player's remaining stack."
       },
       "explanation": {
@@ -184,7 +184,7 @@ const aiDecisionHoldem = async (indicator, survivor, hands, money, pot, is_final
       "explanation"
     ],
     "additionalProperties": false
-  }
+  }//generateAmountEnum(money, pot, indicator)
   
   const decision = await handleSendMessage(mention, schema);
   return new Promise((resolve) => {
