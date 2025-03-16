@@ -75,7 +75,7 @@ app.post('/api/bot-communication', async (req, res) => {
     }
 
     const response = await openai.chat.completions.create(requestBody);
-    res.json(response.choices[0].message.content);
+    res.json({ response: response.choices[0].message.content });
   } catch (error) {
     res.status(500).json({ error: "Something went wrong", details: error.message });
   }
