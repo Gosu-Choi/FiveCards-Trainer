@@ -362,8 +362,8 @@ function Holdem() {
     while (playershouldbetRef.current.some(person => person === true) && activePlayersRef.current.filter(person => person === true).length > 1){
       if (indicatorRef.current === 0){
         await waitForPlayerDecision();
-        const dec = await JSON.parse(DecisionFBHoldem(0, activePlayersRef.current, handsRef.current, moneysRef.current, potRef.current, (communityRef.current[0].length === 5), playerchoiceRef.current, raisedRef.current, communityRef.current[0], playerchoiceRef.current, language));
-        const advice = "You should have done ".concat(dec.decision.action).concat(` ${dec.decision.amount !== 0 ? `` : dec.decision.amount}. `).concat(dec.decision.explanation);;
+        const decTemp = await DecisionFBHoldem(0, activePlayersRef.current, handsRef.current, moneysRef.current, potRef.current, (communityRef.current[0].length === 5), playerchoiceRef.current, raisedRef.current, communityRef.current[0], playerchoiceRef.current, language);        const advice = "You should have done ".concat(dec.decision.action).concat(` ${dec.decision.amount !== 0 ? `` : dec.decision.amount}. `).concat(dec.decision.explanation);;
+        const dec = JSON.parse(decTemp);
         setMents(prevMents => {
           const newMents = [...prevMents]
           newMents[indicatorRef.current] = dec.mention;
@@ -377,7 +377,8 @@ function Holdem() {
           return prevE;
         })
       } else {
-        const dec = await JSON.parse(aiDecisionHoldem(indicatorRef.current, activePlayersRef.current, handsRef.current, moneysRef.current, potRef.current, (communityRef.current[0].length === 5), raisedRef.current, communityRef.current[0], playerchoiceRef.current, language, pokerstyle[indicatorRef.current-1]));
+        const decTemp = await JSON.parse(aiDecisionHoldem(indicatorRef.current, activePlayersRef.current, handsRef.current, moneysRef.current, potRef.current, (communityRef.current[0].length === 5), raisedRef.current, communityRef.current[0], playerchoiceRef.current, language, pokerstyle[indicatorRef.current-1]));
+        const dec = JSON.parse(decTemp);
         setMents(prevMents => {
           const newMents = [...prevMents]
           newMents[indicatorRef.current] = dec.mention;
