@@ -363,7 +363,7 @@ function Holdem() {
       if (indicatorRef.current === 0){
         await waitForPlayerDecision();
         const dec = await DecisionFBHoldem(0, activePlayersRef.current, handsRef.current, moneysRef.current, potRef.current, (communityRef.current[0].length === 5), playerchoiceRef.current, raisedRef.current, communityRef.current[0], playerchoiceRef.current, language);
-        const advice = `You should have done ${dec.decision.action} ${dec.decision.amount === 0 ? '' : dec.decision.amount}. ${dec.decision.explanation}`
+        const advice = `You should have done ${dec.decision.action}${dec.decision.amount === 0 ? '' : ` ${dec.decision.amount}`}. ${dec.decision.explanation}`
         setMents(prevMents => {
           const newMents = [...prevMents]
           newMents[indicatorRef.current] = dec.mention;
@@ -387,13 +387,12 @@ function Holdem() {
         const deci = dec.decision.action;
         setExplanations(prevExplanation => {
           const prevE = [...prevExplanation];
-          prevE[indicatorRef.current] = `Bot ${indicatorRef.current}'s rationale for the decision: ${dec.decision.action} ${dec.decision.amount === 0 ? '' : dec.decision.amount}. ${dec.decision.explanation}`
+          prevE[indicatorRef.current] = `Bot ${indicatorRef.current}'s rationale for the decision: ${dec.decision.action}${dec.decision.amount === 0 ? '' : ` ${dec.decision.amount}`}. ${dec.decision.explanation}`
           explanationsRef.current = prevE;
           return prevE;
         })
         if (deci === 'Raise') {
-          raisedRef.current = dec.decision.amount;
-          await raise(indicatorRef.current);
+          await raise(indicatorRef.current, dec.decision.amount);
         } else if (deci === 'Fold') {
           await fold(indicatorRef.current);
         } else {
@@ -552,7 +551,7 @@ function Holdem() {
     }
   }
 
-  const raise = async(playerIndex) => {
+  const raise = async(playerIndex, raise_to) => {
     if(playerIndex !== 0) {
       console.log(`raise has been called by ${playerIndex}`)
       const betduty = async(i) => {
@@ -560,9 +559,9 @@ function Holdem() {
         call(i, true);
       }
 
-      if (moneysRef.current[playerIndex] > potRef.current*0.5) {
-        setRaised(potRef.current*0.5);
-        raisedRef.current = potRef.current*0.5;
+      if (moneysRef.current[playerIndex] > raise_to) {
+        setRaised(raise_to);
+        raisedRef.current = raise_to;
         await betduty(playerIndex);
       } else if (moneysRef.current[playerIndex] > raisedRef.current) { //All-in
         setRaised(turnmoneymanageRef.current[playerIndex] + moneysRef.current[playerIndex]);
@@ -594,9 +593,9 @@ function Holdem() {
         call(i, true);
       }
   
-      if (moneysRef.current[playerIndex] > raiseAmountRef.current) {
-        setRaised(raiseAmountRef.current);
-        raisedRef.current = raiseAmountRef.current;
+      if (moneysRef.current[playerIndex] > raise_to) {
+        setRaised(raise_to);
+        raisedRef.current = raise_to;
         await betduty(playerIndex);
       } else if (moneysRef.current[playerIndex] > raisedRef.current) { //All-in
         setRaised(turnmoneymanageRef.current[playerIndex] + moneysRef.current[playerIndex]);
@@ -854,10 +853,10 @@ function Holdem() {
             </button>
             <button
               className="btn btn-sm btn-danger action-button"
-              onClick = {() => {
-                  raise(0)
-                  setRaiseAmount("");
-                  raiseAmountRef.current = "";
+              onClick = {async() => {
+                  await raise(0, raiseAmountRef.current);
+                  setRaiseAmount(0);
+                  raiseAmountRef.current = 0;
                 }
               }
               disabled={indicatorRef.current !== 0}
