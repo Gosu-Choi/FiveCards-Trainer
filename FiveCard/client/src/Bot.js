@@ -195,20 +195,34 @@ const aiDecisionHoldem = async (indicator, survivor, hands, money, pot, is_final
 };
 
 const generateAmountEnum = (money, pot, indicator) => {
-  const minAmount = Math.ceil((pot * 0.5) / 100) * 100;
-  const maxAmount = Math.floor(money[indicator] / 100) * 100; 
+  const minTempAmount = Math.ceil((pot * 0.5) / 100) * 100;
+  const maxTempAmount = Math.floor(money[indicator] / 100) * 100;
 
-  let amountEnum = [0];
-  for (let amount = minAmount; amount <= maxAmount; amount += 100) {
-    amountEnum.push(amount);
+  let stepSizes = [100, 500, 1000, 5000, 10000];
+  let stepIndex = 0;
+  let step = stepSizes[stepIndex]; 
+
+  let estimatedCount = (maxTempAmount - minTempAmount) / step;
+
+  while (estimatedCount > 500 && stepIndex < stepSizes.length - 1) {
+    stepIndex++;
+    step = stepSizes[stepIndex];
+    estimatedCount = (maxTempAmount - minTempAmount) / step;
   }
 
+  const minAmount = Math.ceil((pot * 0.5) / stepSizes) * stepSizes;
+  const maxAmount = Math.floor(money[indicator] / stepSizes) * stepSizes;
+
+  let amountEnum = [0];
+  for (let amount = minAmount; amount <= maxAmount; amount += step) {
+    amountEnum.push(amount);
+  }
   if (amountEnum.length === 1) {
     amountEnum.push(maxAmount);
   }
 
   return amountEnum;
-};
+}
 
 const DecisionFBHoldem = async (indicator, survivor, hands, money, pot, is_final, choice, raised, community, choicehistory, languageset) => {
   let mention = `I am playing TEXAS HOLD'EM. Analyze my decision and provide feedback on whether it was correct.`; 

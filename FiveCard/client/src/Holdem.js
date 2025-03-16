@@ -483,10 +483,7 @@ function Holdem() {
     
     potRef.current = potRef.current + moneyPaid;
 
-    console.log("moneysRef.current1: ", moneysRef.current)
-    console.log("newMoney1: ", newMoney)
     moneysRef.current[playerIndex] = newMoney;
-    console.log("moneysRef.current2: ", moneysRef.current)
 
     turnmoneymanageRef.current[playerIndex] = turnmoneymanageRef.current[playerIndex] + moneyPaid;
 

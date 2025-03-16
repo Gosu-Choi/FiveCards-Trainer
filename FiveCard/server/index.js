@@ -50,12 +50,11 @@ app.post('/api/signup', async (req, res) => {
 
 app.post('/api/bot-communication', async (req, res) => {
   const { message, schema } = req.body;
-  console.log("Received message:", message);
-  if (schema) console.log("Received schema:", JSON.stringify(schema, null, 2)); // schema 존재 시 로깅
+  if (schema) console.log("Received schema:", JSON.stringify(schema, null, 2));
 
   try {
     const requestBody = {
-      model: "gpt-4o-mini", // 원하는 모델 사용
+      model: "gpt-4o", 
       messages: [
         { role: "system", content: message },
         { role: "user", content: "Do the thing system requires." }
