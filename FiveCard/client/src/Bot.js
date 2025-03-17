@@ -129,8 +129,8 @@ const aiDecisionHoldem = async (indicator, survivor, hands, money, pot, is_final
   
   // Betting Information
   mention += `\n\n### Betting Information:`;
-  mention += `\n- Your current stack: ${money[indicator]}.`;
-  mention += `\n- Pot size: ${pot}.`;
+  mention += `\n- Your current stack: ${money[indicator]}, and big blind is 100.`;
+  mention += `\n- Pot size: ${pot}`;
   mention += `\n- Amount to call: ${raised - turnmoneymanage[indicator]}.`; // raised - turnmoneymanage[indicator] === 0 ? "nothing (free call)" : 
   
   // Opponents' Actions
@@ -193,6 +193,7 @@ const aiDecisionHoldem = async (indicator, survivor, hands, money, pot, is_final
   
   mention += `\n\n**Now, choose your action:**`;
   mention += `\n- Reply only with 'Fold.', 'Call.', or 'Raise.' first. (If raising, specify amount of additional bet with call money).`;
+  mention += `\n- Raise is from ${(pot + callfor)*0.5}.`;
   mention += `\n- After your decision, explain your reasoning in 3-4 ${languageset} sentences using probability and logic based on GTO or exploitative poker theory.`;
 
   let schema = {
@@ -233,7 +234,7 @@ const aiDecisionHoldem = async (indicator, survivor, hands, money, pot, is_final
 };
 
 const generateAmountEnum = (money, pot, indicator, callfor) => {
-  const minTempAmount = Math.ceil((pot * 0.5) / 100) * 100;
+  const minTempAmount = Math.ceil(((pot + callfor) * 0.5) / 100) * 100;
   const maxTempAmount = Math.floor(Math.max(money[indicator]-callfor, 0) / 100) * 100;
 
   let stepSizes = [100, 500, 1000, 5000, 10000];
@@ -248,7 +249,7 @@ const generateAmountEnum = (money, pot, indicator, callfor) => {
     estimatedCount = (maxTempAmount - minTempAmount) / step;
   }
 
-  const minAmount = Math.ceil((pot * 0.5) / step) * step;
+  const minAmount = Math.ceil(((pot + callfor) * 0.5) / step) * step;
   const maxAmount = Math.floor(Math.max(money[indicator]-callfor, 0) / step) * step;
 
   let amountEnum = [0];
@@ -278,7 +279,7 @@ const DecisionFBHoldem = async (indicator, survivor, hands, money, pot, is_final
 
   // Betting Information
   mention += `\n\n### Betting Information:`;
-  mention += `\n- My current stack: ${money[indicator]}.`;
+  mention += `\n- My current stack: ${money[indicator]}, and big blind is 100.`;
   mention += `\n- Pot size: ${pot}.`;
   mention += `\n- Amount to call: ${raised - turnmoneymanage[indicator] === 0 ? "nothing (free call)" : raised - turnmoneymanage[indicator]}.`;
 
@@ -326,6 +327,7 @@ const DecisionFBHoldem = async (indicator, survivor, hands, money, pot, is_final
 
   mention += `\n\n**Now, provide your response:**`;
   mention += `\n- Reply only with 'Fold.', 'Call.', or 'Raise.' first. (If raising, specify amount).`;
+  mention += `\n- Raise is from ${(pot + callfor)*0.5}.`;
   mention += `\n- Then, provide a strategic explanation in 3-4 ${languageset} sentences using probability and logic based on GTO or exploitative poker theory.`;
 
   let schema = {
