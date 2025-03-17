@@ -183,7 +183,6 @@ function Holdem() {
   }, [playerCount]);
 
   useEffect(()=> {
-    raisedRef.current = raised;
     if (!is_first_operation){
       if (is_beginning) {
         const beginning_func = async() => {
