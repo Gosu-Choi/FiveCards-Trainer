@@ -564,7 +564,7 @@ function Holdem() {
         await setPlayershouldbetfunc();
         call(i, true);
       }
-      console.log("1", raisedRef.current)
+      
       if (moneysRef.current[playerIndex] > raise_to) {
         setRaised(raisedRef.current + raise_to);
         raisedRef.current = raisedRef.current + raise_to;
@@ -576,7 +576,7 @@ function Holdem() {
       } else {
         await call(playerIndex);
       }
-      console.log("2", raisedRef.current)
+
       setPlayerchoice(prevPlayerChoice => {
         return prevPlayerChoice.map((choice, index) => {
           if (index === playerIndex) {
@@ -598,7 +598,8 @@ function Holdem() {
         await setPlayershouldbetfunc();
         call(i, true);
       }
-  
+
+      console.log("1", raisedRef.current)
       if (moneysRef.current[playerIndex] > raise_to) {
         setRaised(raise_to);
         raisedRef.current = raise_to;
@@ -610,7 +611,7 @@ function Holdem() {
       } else {
         await call(playerIndex);
       }
-  
+      console.log("2", raisedRef.current)
       setPlayerchoice(prevPlayerChoice => {
         return prevPlayerChoice.map((choice, index) => {
           if (index === playerIndex) {
