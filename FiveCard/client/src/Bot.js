@@ -193,7 +193,7 @@ const aiDecisionHoldem = async (indicator, survivor, hands, money, pot, is_final
   
   mention += `\n\n**Now, choose your action:**`;
   mention += `\n- Reply only with 'Fold.', 'Call.', or 'Raise.' first. (If raising, specify amount of additional bet with call money).`;
-  mention += `\n- Raise is from ${(pot + callfor)*0.5}.`;
+  mention += `\n- Raise is from ${(pot + raised - turnmoneymanage[indicator])*0.5}.`;
   mention += `\n- After your decision, explain your reasoning in 3-4 ${languageset} sentences using probability and logic based on GTO or exploitative poker theory.`;
 
   let schema = {
@@ -327,7 +327,7 @@ const DecisionFBHoldem = async (indicator, survivor, hands, money, pot, is_final
 
   mention += `\n\n**Now, provide your response:**`;
   mention += `\n- Reply only with 'Fold.', 'Call.', or 'Raise.' first. (If raising, specify amount).`;
-  mention += `\n- Raise is from ${(pot + callfor)*0.5}.`;
+  mention += `\n- Raise is from ${(pot + raised - turnmoneymanage[indicator])*0.5}.`;
   mention += `\n- Then, provide a strategic explanation in 3-4 ${languageset} sentences using probability and logic based on GTO or exploitative poker theory.`;
 
   let schema = {
