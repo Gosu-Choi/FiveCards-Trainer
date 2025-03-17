@@ -378,7 +378,6 @@ function Holdem() {
           return prevE;
         })
       } else {
-        console.log("5", raisedRef.current)
         const dec = await aiDecisionHoldem(indicatorRef.current, activePlayersRef.current, handsRef.current, moneysRef.current, potRef.current, (communityRef.current[0].length === 5), raisedRef.current, communityRef.current[0], playerchoiceRef.current, language, pokerstyle[indicatorRef.current-1], turnmoneymanageRef.current);
         console.log(dec)
         setMents(prevMents => {
@@ -395,9 +394,7 @@ function Holdem() {
           return prevE;
         })
         if (deci === 'Raise') {
-          console.log("6", raisedRef.current)
           await raise(indicatorRef.current, dec.decision.amount);
-          console.log("7", raisedRef.current)
         } else if (deci === 'Fold') {
           await fold(indicatorRef.current);
         } else {
@@ -558,6 +555,7 @@ function Holdem() {
   }
 
   const raise = async(playerIndex, raise_to) => {
+    console.log(typeof(raise_to))
     if(playerIndex !== 0) {
       console.log(`raise has been called by ${playerIndex}`)
       const betduty = async(i) => {
@@ -599,7 +597,6 @@ function Holdem() {
         call(i, true);
       }
 
-      console.log("1", raisedRef.current)
       if (moneysRef.current[playerIndex] > raise_to) {
         setRaised(raise_to);
         raisedRef.current = raise_to;
@@ -611,7 +608,6 @@ function Holdem() {
       } else {
         await call(playerIndex);
       }
-      console.log("2", raisedRef.current)
       setPlayerchoice(prevPlayerChoice => {
         return prevPlayerChoice.map((choice, index) => {
           if (index === playerIndex) {
@@ -862,11 +858,9 @@ function Holdem() {
             <button
               className="btn btn-sm btn-danger action-button"
               onClick = {async() => {
-                  console.log("3", raisedRef.current)
                   await raise(0, raiseAmountRef.current);
                   setRaiseAmount(0);
                   raiseAmountRef.current = 0;
-                  console.log("4", raisedRef.current)
                 }
               }
               disabled={indicatorRef.current !== 0}
