@@ -819,7 +819,7 @@ function Holdem() {
         <div className="button-container">
           <div>Pot: {potRef.current}</div>
           Bet {raisedRef.current-turnmoneymanageRef.current[0] <= moneysRef.current[0] ? raisedRef.current-turnmoneymanageRef.current[0] : moneysRef.current[0]} to {raisedRef.current-turnmoneymanageRef.current[0] === 0 ? "check" : "call"},
-          Bet {raisedRef.current-turnmoneymanageRef.current[0] + 0.5*potRef.current} to min-raise.
+          Bet {(raisedRef.current === 0 ? potRef.current * 0.1 : raisedRef.current)} to min-raise.
           <button
             className={`btn btn-sm ${deckShuffled ? 'btn-primary' : 'btn-secondary'} shuffle-button`}
             onClick={shuffleCards}

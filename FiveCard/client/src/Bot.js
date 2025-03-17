@@ -193,8 +193,8 @@ const aiDecisionHoldem = async (indicator, survivor, hands, money, pot, is_final
   
   mention += `\n\n**Now, choose your action:**`;
   mention += `\n- Reply only with 'Fold.', 'Call.', or 'Raise.' first. (If raising, specify amount of additional bet with call money).`;
-  mention += `\n- Raise is from ${raised === 0 ? pot * 0.1 : raised*0.5}.`;
-  console.log(`He heard like `, (raised === 0 ? pot * 0.1 : raised*0.5));
+  mention += `\n- Raise is from ${raised === 0 ? pot * 0.1 : raised}.`;
+  console.log(`He heard like `, (raised === 0 ? pot * 0.1 : raised));
   mention += `\n- After your decision, explain your reasoning in 3-4 ${languageset} sentences using probability and logic based on GTO or exploitative poker theory.`;
 
   let schema = {
@@ -235,7 +235,7 @@ const aiDecisionHoldem = async (indicator, survivor, hands, money, pot, is_final
 };
 
 const generateAmountEnum = (money, pot, indicator, callfor, raised) => {
-  const minTempAmount = Math.ceil((raised === 0 ? pot * 0.1 : raised*0.5) / 100) * 100;
+  const minTempAmount = Math.ceil((raised === 0 ? pot * 0.1 : raised) / 100) * 100;
   const maxTempAmount = Math.floor(Math.max(money[indicator]-callfor, 0) / 100) * 100;
 
   let stepSizes = [100, 500, 1000, 5000, 10000];
@@ -250,7 +250,7 @@ const generateAmountEnum = (money, pot, indicator, callfor, raised) => {
     estimatedCount = (maxTempAmount - minTempAmount) / step;
   }
 
-  const minAmount = Math.ceil((raised === 0 ? pot * 0.1 : raised*0.5) / step) * step;
+  const minAmount = Math.ceil((raised === 0 ? pot * 0.1 : raised) / step) * step;
   const maxAmount = Math.floor(Math.max(money[indicator]-callfor, 0) / step) * step;
 
   let amountEnum = [0];
@@ -328,7 +328,7 @@ const DecisionFBHoldem = async (indicator, survivor, hands, money, pot, is_final
 
   mention += `\n\n**Now, provide your response:**`;
   mention += `\n- Reply only with 'Fold.', 'Call.', or 'Raise.' first. (If raising, specify amount).`;
-  mention += `\n- Raise is from ${raised === 0 ? pot * 0.1 : raised*0.5}.`;
+  mention += `\n- Raise is from ${raised === 0 ? pot * 0.1 : raised}.`;
   mention += `\n- Then, provide a strategic explanation in 3-4 ${languageset} sentences using probability and logic based on GTO or exploitative poker theory.`;
 
   let schema = {
