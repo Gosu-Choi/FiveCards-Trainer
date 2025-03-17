@@ -54,7 +54,11 @@ const convertCardList = (cards) => {
   return cards.map(convertCard).join(", ");
 };
 
-const aifeedbackforOM = async(history, model, playerCount, language, style) => {
+const aifeedbackforOM = async(history, model, playerCount, language, style) => { // improvement is needed.
+  if (model.every(item => item === "")) {
+    return;
+  }
+
   let mention = "I am playing TEXAS HOLD'EM. And I have established opponent modeling in this game, and I want to receive your feedback for it. I will give you three informations for each player. Opened cards for recent 5 games (including community cards and if open, the holding card of that player) and following betting records for each game, and my modeling of that player. ";
   for (let i = 0; i<history.length; i++){
     mention = mention.concat(" At ").concat(i).concat("th game, the community cards were ").concat(history[i].community_cards).concat(" followings are betting record in that game. ");
@@ -80,7 +84,7 @@ const aifeedbackforOM = async(history, model, playerCount, language, style) => {
   }
   mention = mention.concat(" And my opponent modeling is following.");
   for (let i = 1; i<playerCount; i++){
-    if (model[i-1] !== ""){
+    if (model[i-1].length !== 0){
       mention = mention.concat(" I modeled player ").concat(i).concat(" as following, '").concat(model[i-1]).concat("'");
     } 
   }
@@ -98,11 +102,11 @@ const aifeedbackforOM = async(history, model, playerCount, language, style) => {
   });
 }
 
-const aiDecisionHoldem = async (indicator, survivor, hands, money, pot, is_final, raised, community, choicehistory, languageset, style) => {
-  if (money[indicator] === 0) {
+const aiDecisionHoldem = async (indicator, survivor, hands, money, pot, is_final, raised, community, choicehistory, languageset, style, turnmoneymanage) => {
+  if (money[indicator] === 0) { // all-in
     return new Promise((resolve) => {
       setTimeout(() => {
-        resolve({ decision: "Call." });
+        resolve({ decision: { action: "Call", amount: 0, explanation: "I did all-in."}});
       }, 0);
     });
   } 
@@ -127,7 +131,7 @@ const aiDecisionHoldem = async (indicator, survivor, hands, money, pot, is_final
   mention += `\n\n### Betting Information:`;
   mention += `\n- Your current stack: ${money[indicator]}.`;
   mention += `\n- Pot size: ${pot}.`;
-  mention += `\n- Amount to call: ${raised === 0 ? "nothing (free call)" : raised}.`;
+  mention += `\n- Amount to call: ${raised - turnmoneymanage[indicator]}.`; // raised - turnmoneymanage[indicator] === 0 ? "nothing (free call)" : 
   
   // Opponents' Actions
   mention += `\n\n### Opponent Actions:`;
@@ -147,15 +151,44 @@ const aiDecisionHoldem = async (indicator, survivor, hands, money, pot, is_final
   mention += `\n- Do you currently have a strong hand, or are you drawing?`;
   mention += `\n- What can you do with this situation? What's are you expecting with it? Do you want to bluff or not, value bet or fold or other thing?`;
   mention += `\n- Based on your plan and strategy, should you call, fold, or raise?`;
-  mention += `\n- If you raise, what is your optimal bet size?`;
+  mention += `\n- If you raise, what is your additional bet size?`;
   mention += `\n- If you call, what are the possible future scenarios?`;
   
   if (is_final) {
     mention += `\n\nThis is the final phase of betting. No more cards will be dealt. Recognize that if a flush or straight is possible using only the community cards, other players may also have it.`;
   }
+
+  if (raised - turnmoneymanage[indicator] === 0){
+    mention += `Which of one do you want to do? Check or bet? Call for simple answer.`
+    let simple_schema = {
+      "type": "object",
+      "properties": {
+        "action": {
+          "type": "string",
+          "enum": [
+            "Check", "Bet"
+          ],
+          "description": "The player's chosen action for this betting round. 'Call' matches the current bet, 'Fold' forfeits the hand, and 'Raise' increases the bet."
+        }
+      },
+      "required": [
+        "action"
+      ],
+      "additionalProperties": false
+    }
+    const decision_notjson = await handleSendMessage(mention, simple_schema);
+    let decision_check = JSON.parse(decision_notjson)
+    decision_check.amount = 0;
+    decision_check.explanation = `I don't want to bet more in this pot for now, it is fast-check.`
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        resolve({ decision_check, mention });
+      }, 0);
+    });
+  }
   
   mention += `\n\n**Now, choose your action:**`;
-  mention += `\n- Reply only with 'Fold.', 'Call.', or 'Raise.' first. (If raising, specify amount).`;
+  mention += `\n- Reply only with 'Fold.', 'Call.', or 'Raise.' first. (If raising, specify amount of additional bet with call money).`;
   mention += `\n- After your decision, explain your reasoning in 3-4 ${languageset} sentences using probability and logic based on GTO or exploitative poker theory.`;
 
   let schema = {
@@ -170,8 +203,8 @@ const aiDecisionHoldem = async (indicator, survivor, hands, money, pot, is_final
       },
       "amount": {
         "type": "number",
-        "enum": generateAmountEnum(money, pot, indicator), 
-        "description": "You should fill it 0 when you do fold or call. The bet amount in chips. The minimum value is at least half the pot, and the maximum value is the player's remaining stack."
+        "enum": generateAmountEnum(money, pot, indicator, raised - turnmoneymanage[indicator]), 
+        "description": "You should fill it 0 when you do fold or call. The additional bet amount in chips. The minimum value is at least half the pot, and the maximum value is the player's remaining stack."
       },
       "explanation": {
         "type": "string",
@@ -195,9 +228,9 @@ const aiDecisionHoldem = async (indicator, survivor, hands, money, pot, is_final
   });
 };
 
-const generateAmountEnum = (money, pot, indicator) => {
+const generateAmountEnum = (money, pot, indicator, callfor) => {
   const minTempAmount = Math.ceil((pot * 0.5) / 100) * 100;
-  const maxTempAmount = Math.floor(money[indicator] / 100) * 100;
+  const maxTempAmount = Math.floor(Math.max(money[indicator]-callfor, 0) / 100) * 100;
 
   let stepSizes = [100, 500, 1000, 5000, 10000];
   let stepIndex = 0;
@@ -212,7 +245,7 @@ const generateAmountEnum = (money, pot, indicator) => {
   }
 
   const minAmount = Math.ceil((pot * 0.5) / step) * step;
-  const maxAmount = Math.floor(money[indicator] / step) * step;
+  const maxAmount = Math.floor(Math.max(money[indicator]-callfor, 0) / step) * step;
 
   let amountEnum = [0];
   for (let amount = minAmount; amount <= maxAmount; amount += step) {
@@ -224,9 +257,8 @@ const generateAmountEnum = (money, pot, indicator) => {
   return amountEnum;
 }
 
-const DecisionFBHoldem = async (indicator, survivor, hands, money, pot, is_final, choice, raised, community, choicehistory, languageset) => {
+const DecisionFBHoldem = async (indicator, survivor, hands, money, pot, is_final, choice, raised, community, choicehistory, languageset, turnmoneymanage) => {
   let mention = `I am playing TEXAS HOLD'EM. Analyze my decision and provide feedback on whether it was correct.`; 
-
   // AI's Hole Cards
   mention += `\n\n### My Hand:`;
   mention += `\n- Hole cards: ${convertCardList(hands[indicator])}.`;
@@ -244,7 +276,7 @@ const DecisionFBHoldem = async (indicator, survivor, hands, money, pot, is_final
   mention += `\n\n### Betting Information:`;
   mention += `\n- My current stack: ${money[indicator]}.`;
   mention += `\n- Pot size: ${pot}.`;
-  mention += `\n- Amount to call: ${raised === 0 ? "nothing (free call)" : raised}.`;
+  mention += `\n- Amount to call: ${raised - turnmoneymanage[indicator] === 0 ? "nothing (free call)" : raised - turnmoneymanage[indicator]}.`;
 
   // Opponents' Actions
   mention += `\n\n### Opponent Actions:`;  
@@ -257,6 +289,19 @@ const DecisionFBHoldem = async (indicator, survivor, hands, money, pot, is_final
       if (choicehistory[i].includes(4)) mention += ` River: ${choicehistory[i].slice(choicehistory[i].indexOf(3) + 1, choicehistory[i].indexOf(4))}.`;
       mention += ` Stack: ${money[i]}.`;
     }
+  }
+
+  if (raised - turnmoneymanage[indicator] === 0 && JSON.stringify(choice[0][choice[0].length - 1]) === JSON.stringify("call")){
+    mention += `I did check for now.`
+    let decision_check = {};
+    decision_check.action = "Check"
+    decision_check.amount = 0;
+    decision_check.explanation = `You did check, and this is good choice because you can do free call for now.`
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        resolve({ decision, mention });
+      }, 0);
+    });
   }
 
   // Player's Action and Request for Feedback
@@ -289,7 +334,7 @@ const DecisionFBHoldem = async (indicator, survivor, hands, money, pot, is_final
       },
       "amount": {
         "type": "number",
-        "enum": generateAmountEnum(money, pot, indicator),
+        "enum": generateAmountEnum(money, pot, indicator, raised - turnmoneymanage[indicator]),
         "description": "You should fill it 0 when you do fold or call. The bet amount in chips, increasing in increments of 100. The minimum value is at least half the pot, and the maximum value is the player's remaining stack."
       },
       "explanation": {

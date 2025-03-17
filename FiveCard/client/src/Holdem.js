@@ -242,14 +242,14 @@ function Holdem() {
           const winner = determineWinner7(combinatehand(handsRef.current, communityRef.current), activePlayersRef.current, false);
           setWinner_index(winner);
           winner_indexRef.current = winner;
+          let temp = [...moneysRef.current]; // changed from here
+          moneysRef.current[winner] = temp[winner] + potRef.current;
+          potRef.current = 0; // to here
           historization({betting_result: playerchoiceRef.current, community_cards: communityRef.current[0], final_players: activePlayersRef.current, player_hands: handsRef.current});
           if (!opponentmodelsRef.current.every(e => e===null)) {
             const newfeedbackforOM = await aifeedbackforOM(historyexport(5), opponentmodelsRef.current, playerCount, language, pokerstyle);
             setFeedbackforOM(newfeedbackforOM.feedback);
           }
-          let temp = [...moneysRef.current];
-          moneysRef.current[winner] = temp[winner] + potRef.current;
-          potRef.current = 0;
         }
         if (activePlayersRef.current.filter(person => person === true).length > 1 && showFifthCardRef.current === false){
           await waitForOpen();
@@ -301,9 +301,9 @@ function Holdem() {
     const data = await response.json();
     if (data.success) {
       refreshmoney(money);
-      alert('Success.'); // 회원가입 성공 시 로그인 페이지로 이동
+      alert('Success.');
     } else {
-      alert(data.message || 'Save failed'); // 서버에서 전송된 오류 메시지 출력
+      alert(data.message || 'Save failed');
     }
   }
 
@@ -362,7 +362,7 @@ function Holdem() {
     while (playershouldbetRef.current.some(person => person === true) && activePlayersRef.current.filter(person => person === true).length > 1){
       if (indicatorRef.current === 0){
         await waitForPlayerDecision();
-        const dec = await DecisionFBHoldem(0, activePlayersRef.current, handsRef.current, moneysRef.current, potRef.current, (communityRef.current[0].length === 5), playerchoiceRef.current, raisedRef.current, communityRef.current[0], playerchoiceRef.current, language);
+        const dec = await DecisionFBHoldem(0, activePlayersRef.current, handsRef.current, moneysRef.current, potRef.current, (communityRef.current[0].length === 5), playerchoiceRef.current, raisedRef.current, communityRef.current[0], playerchoiceRef.current, language, turnmoneymanageRef.current);
         const advice = `You should have done ${dec.decision.action}${dec.decision.amount === 0 ? '' : ` ${dec.decision.amount}`}. ${dec.decision.explanation}`
         setMents(prevMents => {
           const newMents = [...prevMents]
@@ -377,7 +377,7 @@ function Holdem() {
           return prevE;
         })
       } else {
-        const dec = await aiDecisionHoldem(indicatorRef.current, activePlayersRef.current, handsRef.current, moneysRef.current, potRef.current, (communityRef.current[0].length === 5), raisedRef.current, communityRef.current[0], playerchoiceRef.current, language, pokerstyle[indicatorRef.current-1]);
+        const dec = await aiDecisionHoldem(indicatorRef.current, activePlayersRef.current, handsRef.current, moneysRef.current, potRef.current, (communityRef.current[0].length === 5), raisedRef.current, communityRef.current[0], playerchoiceRef.current, language, pokerstyle[indicatorRef.current-1], turnmoneymanageRef.current);
         setMents(prevMents => {
           const newMents = [...prevMents]
           newMents[indicatorRef.current] = dec.mention;
@@ -560,8 +560,8 @@ function Holdem() {
       }
 
       if (moneysRef.current[playerIndex] > raise_to) {
-        setRaised(raise_to);
-        raisedRef.current = raise_to;
+        setRaised(raisedRef.current + raise_to);
+        raisedRef.current = raisedRef.current + raise_to;
         await betduty(playerIndex);
       } else if (moneysRef.current[playerIndex] > raisedRef.current) { //All-in
         setRaised(turnmoneymanageRef.current[playerIndex] + moneysRef.current[playerIndex]);
@@ -785,12 +785,12 @@ function Holdem() {
     const radius = (Math.min(centerX, centerY) - 20);
 
     const img = new Image();
-    img.src = marbleImage; // 도박 매트 이미지 경로
+    img.src = marbleImage;
     img.onload = () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height); // 기존의 도형을 지웁니다.
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
       ctx.save();
       ctx.beginPath();
-      ctx.arc(centerX, centerY, radius * 2, 0, Math.PI * 2); // 원의 반지름을 두 배로 설정합니다.
+      ctx.arc(centerX, centerY, radius * 2, 0, Math.PI * 2);
       ctx.clip();
       ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
       ctx.restore();
@@ -814,7 +814,7 @@ function Holdem() {
         <div className="button-container">
           <div>Pot: {potRef.current}</div>
           Bet {raisedRef.current-turnmoneymanageRef.current[0] <= moneysRef.current[0] ? raisedRef.current-turnmoneymanageRef.current[0] : moneysRef.current[0]} to {raisedRef.current-turnmoneymanageRef.current[0] === 0 ? "check" : "call"},
-          Bet {0.5*potRef.current} to raise.
+          Bet {raisedRef.current-turnmoneymanageRef.current[0] + 0.5*potRef.current} to min-raise.
           <button
             className={`btn btn-sm ${deckShuffled ? 'btn-primary' : 'btn-secondary'} shuffle-button`}
             onClick={shuffleCards}
