@@ -357,6 +357,7 @@ function Holdem() {
 
   const handleBettingRound = async () => {
     setRaised(0);
+    raisedRef.current = 0
     setTurn(true);
     setTurnmoneymanage(new Array(playerCount).fill(0));
     while (playershouldbetRef.current.some(person => person === true) && activePlayersRef.current.filter(person => person === true).length > 1){
@@ -438,6 +439,7 @@ function Holdem() {
     setIs_first_operation(false);
     await change_indicator(0);
     setRaised(default_ante);
+    raisedRef.current = default_ante
   };
 
   const fold = async (playerIndex) => {
@@ -666,6 +668,7 @@ function Holdem() {
       showFifthCardRef.current = true;
     }
     setRaised(0);
+    raisedRef.current = 0
     setGamestarted(false);
   };
 
