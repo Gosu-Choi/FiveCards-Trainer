@@ -555,7 +555,6 @@ function Holdem() {
   }
 
   const raise = async(playerIndex, raise_to) => {
-    console.log(typeof(raise_to))
     if(playerIndex !== 0) {
       console.log(`raise has been called by ${playerIndex}`)
       const betduty = async(i) => {
@@ -840,8 +839,8 @@ function Holdem() {
             className="raise-input"
             value={raiseAmountRef.current}
             onChange={(e) => {
-                setRaiseAmount(e.target.value);
-                raiseAmountRef.current = e.target.value;
+                setRaiseAmount(parseInt(e.target.value));
+                raiseAmountRef.current = parseInt(e.target.value);
             }}
             placeholder={`Raise Amount`}
             style={{ fontSize: "12px" }}
