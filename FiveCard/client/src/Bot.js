@@ -178,13 +178,17 @@ const aiDecisionHoldem = async (indicator, survivor, hands, money, pot, is_final
     }
     const decision_notjson = await handleSendMessage(mention, simple_schema);
     let decision = JSON.parse(decision_notjson)
-    decision.amount = 0;
-    decision.explanation = `I don't want to bet more in this pot for now, it is fast-check.`
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve({ decision, mention });
-      }, 0);
-    });
+
+    if (decision.action === "Bet") {
+    } else {
+      decision.amount = 0;
+      decision.explanation = `I don't want to bet more in this pot for now, it is fast-check.`;
+      return new Promise((resolve) => {
+        setTimeout(() => {
+          resolve({ decision, mention });
+        }, 0);
+      });
+    }
   }
   
   mention += `\n\n**Now, choose your action:**`;
