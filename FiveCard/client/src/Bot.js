@@ -168,7 +168,7 @@ const aiDecisionHoldem = async (indicator, survivor, hands, money, pot, is_final
           "enum": [
             "Check", "Bet"
           ],
-          "description": "The player's chosen action for this betting round. 'Call' matches the current bet, 'Fold' forfeits the hand, and 'Raise' increases the bet."
+          "description": "The player's chosen action for this betting round. 'Check' matches the current bet, 'Bet' increases the bet."
         }
       },
       "required": [
