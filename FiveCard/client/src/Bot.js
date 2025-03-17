@@ -292,14 +292,14 @@ const DecisionFBHoldem = async (indicator, survivor, hands, money, pot, is_final
   }
 
   if (raised - turnmoneymanage[indicator] === 0 && JSON.stringify(choice[0][choice[0].length - 1]) === JSON.stringify("call")){
-    mention += `I did check for now.`
+    mention += `\nI did check for now.`
     let decision_check = {};
     decision_check.action = "Check"
     decision_check.amount = 0;
     decision_check.explanation = `You did check, and this is good choice because you can do free call for now.`
     return new Promise((resolve) => {
       setTimeout(() => {
-        resolve({ decision, mention });
+        resolve({ decision_check, mention });
       }, 0);
     });
   }
