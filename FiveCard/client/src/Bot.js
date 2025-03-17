@@ -177,12 +177,12 @@ const aiDecisionHoldem = async (indicator, survivor, hands, money, pot, is_final
       "additionalProperties": false
     }
     const decision_notjson = await handleSendMessage(mention, simple_schema);
-    let decision_check = JSON.parse(decision_notjson)
-    decision_check.amount = 0;
-    decision_check.explanation = `I don't want to bet more in this pot for now, it is fast-check.`
+    let decision = JSON.parse(decision_notjson)
+    decision.amount = 0;
+    decision.explanation = `I don't want to bet more in this pot for now, it is fast-check.`
     return new Promise((resolve) => {
       setTimeout(() => {
-        resolve({ decision_check, mention });
+        resolve({ decision, mention });
       }, 0);
     });
   }
@@ -293,13 +293,13 @@ const DecisionFBHoldem = async (indicator, survivor, hands, money, pot, is_final
 
   if (raised - turnmoneymanage[indicator] === 0 && JSON.stringify(choice[0][choice[0].length - 1]) === JSON.stringify("call")){
     mention += `\nI did check for now.`
-    let decision_check = {};
-    decision_check.action = "Check"
-    decision_check.amount = 0;
-    decision_check.explanation = `You did check, and this is good choice because you can do free call for now.`
+    let decision = {};
+    decision.action = "Check"
+    decision.amount = 0;
+    decision.explanation = `You did check, and this is good choice because you can do free call for now.`
     return new Promise((resolve) => {
       setTimeout(() => {
-        resolve({ decision_check, mention });
+        resolve({ decision, mention });
       }, 0);
     });
   }
