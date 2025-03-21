@@ -554,75 +554,38 @@ function Holdem() {
     }
   }
 
-  const raise = async(playerIndex, raise_to) => {
-    if(playerIndex !== 0) {
-      console.log(`raise has been called by ${playerIndex}`)
-      const betduty = async(i) => {
-        await setPlayershouldbetfunc();
-        call(i, true);
-      }
-      
-      if (moneysRef.current[playerIndex] > raise_to) {
-        setRaised(raisedRef.current + raise_to);
-        raisedRef.current = raisedRef.current + raise_to;
-        await betduty(playerIndex);
-      } else if (moneysRef.current[playerIndex] > raisedRef.current) { //All-in
-        setRaised(turnmoneymanageRef.current[playerIndex] + moneysRef.current[playerIndex]);
-        raisedRef.current = turnmoneymanageRef.current[playerIndex] + moneysRef.current[playerIndex];
-        await betduty(playerIndex);
-      } else {
-        await call(playerIndex);
-      }
-
-      setPlayerchoice(prevPlayerChoice => {
-        return prevPlayerChoice.map((choice, index) => {
-          if (index === playerIndex) {
-            return [...choice, 'raise'];
-          }
-          return choice;
-        });
-      }); 
+  const raise = async (playerIndex, raiseTo) => {
+    const betDuty = async (i) => {
+      await setPlayershouldbetfunc();
+      await call(i, true);
+    };
   
-      playerchoiceRef.current = playerchoiceRef.current.map((choice, index) => {
-        if (index === playerIndex) {
-          return [...choice, 'raise'];
-        }
-        return choice;
-      });
+    const playerMoney = moneysRef.current[playerIndex];
+    let newRaised = raisedRef.current; 
+  
+    if (playerMoney > raiseTo) {
+      newRaised = playerIndex === 0 ? raiseTo : raisedRef.current + raiseTo;
+      setRaised(newRaised);
+      raisedRef.current = newRaised;
+      await betDuty(playerIndex);
+    } else if (playerMoney > raisedRef.current) { 
+      newRaised = turnmoneymanageRef.current[playerIndex] + playerMoney;
+      setRaised(newRaised);
+      raisedRef.current = newRaised;
+      await betDuty(playerIndex);
     } else {
-      console.log(`raise has been called by ${playerIndex}`)
-      const betduty = async(i) => {
-        await setPlayershouldbetfunc();
-        call(i, true);
-      }
-
-      if (moneysRef.current[playerIndex] > raise_to) {
-        setRaised(raise_to);
-        raisedRef.current = raise_to;
-        await betduty(playerIndex);
-      } else if (moneysRef.current[playerIndex] > raisedRef.current) { //All-in
-        setRaised(turnmoneymanageRef.current[playerIndex] + moneysRef.current[playerIndex]);
-        raisedRef.current = turnmoneymanageRef.current[playerIndex] + moneysRef.current[playerIndex];
-        await betduty(playerIndex);
-      } else {
-        await call(playerIndex);
-      }
-      setPlayerchoice(prevPlayerChoice => {
-        return prevPlayerChoice.map((choice, index) => {
-          if (index === playerIndex) {
-            return [...choice, 'raise'];
-          }
-          return choice;
-        });
-      }); 
-  
-      playerchoiceRef.current = playerchoiceRef.current.map((choice, index) => {
-        if (index === playerIndex) {
-          return [...choice, 'raise'];
-        }
-        return choice;
-      });
+      await call(playerIndex);
     }
+  
+    setPlayerchoice(prevPlayerChoice =>
+      prevPlayerChoice.map((choice, index) =>
+        index === playerIndex ? [...choice, 'raise'] : choice
+      )
+    );
+  
+    playerchoiceRef.current = playerchoiceRef.current.map((choice, index) =>
+      index === playerIndex ? [...choice, 'raise'] : choice
+    );
   };
 
   const drawCards = async() => {
