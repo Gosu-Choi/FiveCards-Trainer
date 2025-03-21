@@ -805,7 +805,7 @@ function Holdem() {
                 raiseAmountRef.current = parseInt(e.target.value);
             }}
             placeholder={`Additional Bet Amount`}
-            style={{ fontSize: "12px", width: "300px", padding: "0 10px"  }}
+            style={{ fontSize: "12px", width: "200px", padding: "0 10px"  }}
             />
           </div>
           <div className="action-buttons">
