@@ -1,14 +1,14 @@
 {
   "files": {
     "main.css": "/static/css/main.d0c475b4.css",
-    "main.js": "/static/js/main.fe842fce.js",
+    "main.js": "/static/js/main.a1f50efe.js",
     "index.html": "/index.html",
     "static/media/round-poker-table.svg": "/static/media/round-poker-table.19a2109a523df2ed5323d0d4fed024dd.svg",
     "main.d0c475b4.css.map": "/static/css/main.d0c475b4.css.map",
-    "main.fe842fce.js.map": "/static/js/main.fe842fce.js.map"
+    "main.a1f50efe.js.map": "/static/js/main.a1f50efe.js.map"
   },
   "entrypoints": [
     "static/css/main.d0c475b4.css",
-    "static/js/main.fe842fce.js"
+    "static/js/main.a1f50efe.js"
   ]
 }

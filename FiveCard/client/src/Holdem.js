@@ -564,12 +564,12 @@ function Holdem() {
     let newRaised = raisedRef.current; 
   
     if (playerMoney > raiseTo) {
-      newRaised = playerIndex === 0 ? raiseTo : raisedRef.current + raiseTo;
+      newRaised = raisedRef.current + raiseTo; // newRaised = playerIndex === 0 ? raiseTo : raisedRef.current + raiseTo;
       setRaised(newRaised);
       raisedRef.current = newRaised;
       await betDuty(playerIndex);
     } else if (playerMoney > raisedRef.current) { 
-      newRaised = turnmoneymanageRef.current[playerIndex] + playerMoney;
+      newRaised = turnmoneymanageRef.current[playerIndex] + playerMoney; // ?
       setRaised(newRaised);
       raisedRef.current = newRaised;
       await betDuty(playerIndex);
@@ -667,11 +667,10 @@ function Holdem() {
     const boxes = [];
     const angleIncrement = 180 / (playerCount-1);
 
-    const communityCardY = 10; // 커뮤니티 카드를 상단에 배치하기 위한 Y 좌표
+    const communityCardY = 10; 
 
-    // 커뮤니티 카드 렌더링
     for (let k = 0; k < communityDrawn[0]; k++) {
-        const communityCardX = 50 + 10 * (k - 2); // 커뮤니티 카드 위치 조정
+        const communityCardX = 50 + 10 * (k - 2);
         let cardFilePath = `/cards/${shuffledCards[52-k-1]}.svg`;
 
         boxes.push(
@@ -689,13 +688,13 @@ function Holdem() {
 
 
     for (let i = 0; i < playerCount; i++) {
-      const angle = angleIncrement * i + 180; // 180도 회전하여 원 아래가 첫 번째 지점이 되도록 설정
-      const x = 50 + 40 * Math.cos(Math.PI + (angle) * (Math.PI / 180)); // X 좌표
-      const y = 50 + 40 * Math.sin(Math.PI + (angle) * (Math.PI / 180)); // Y 좌표
+      const angle = angleIncrement * i + 180;
+      const x = 50 + 40 * Math.cos(Math.PI + (angle) * (Math.PI / 180)); 
+      const y = 50 + 40 * Math.sin(Math.PI + (angle) * (Math.PI / 180)); 
 
       for (let j = 0; j < cardsDrawn[i]; j++) {
-        const boxX = x + 5 * j - 2; // 가로로 배치, -2는 중앙 정렬을 위해
-        let cardFilePath = `/cards/${shuffledCards[j + i * 5]}.svg`; // 무작위로 섞인 카드 파일 경로
+        const boxX = x + 5 * j - 2; 
+        let cardFilePath = `/cards/${shuffledCards[j + i * 5]}.svg`; 
 
         if (i !== 0 && ((showFifthCard && !activePlayersRef.current[i]) || !showFifthCard)) {
           cardFilePath = `/cards/card_back.svg`;
@@ -779,8 +778,8 @@ function Holdem() {
         {renderBoxes()}
         <div className="button-container">
           <div>Pot: {potRef.current}</div>
-          Bet {raisedRef.current-turnmoneymanageRef.current[0] <= moneysRef.current[0] ? raisedRef.current-turnmoneymanageRef.current[0] : moneysRef.current[0]} to {raisedRef.current-turnmoneymanageRef.current[0] === 0 ? "check" : "call"},
-          Bet {(raisedRef.current === 0 ? potRef.current * 0.1 : raisedRef.current*2)} to raise.
+          <div>Bet {raisedRef.current-turnmoneymanageRef.current[0] <= moneysRef.current[0] ? raisedRef.current-turnmoneymanageRef.current[0] : moneysRef.current[0]} to {raisedRef.current-turnmoneymanageRef.current[0] === 0 ? "check" : "call"}</div>
+          Bet callpot and additional {(raisedRef.current === 0 ? potRef.current * 0.1 : raisedRef.current)} to raise.
           <button
             className={`btn btn-sm ${deckShuffled ? 'btn-primary' : 'btn-secondary'} shuffle-button`}
             onClick={shuffleCards}
@@ -805,7 +804,7 @@ function Holdem() {
                 setRaiseAmount(parseInt(e.target.value));
                 raiseAmountRef.current = parseInt(e.target.value);
             }}
-            placeholder={`Raise Amount`}
+            placeholder={`Additional Bet Amount`}
             style={{ fontSize: "12px" }}
             />
           </div>
@@ -825,7 +824,8 @@ function Holdem() {
                   raiseAmountRef.current = 0;
                 }
               }
-              disabled={indicatorRef.current !== 0}
+              disabled={indicatorRef.current !== 0 ||
+              raiseAmountRef.current < (raisedRef.current === 0 ? potRef.current * 0.1 : raisedRef.current)}
             >
               Raise
             </button>

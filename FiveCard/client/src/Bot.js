@@ -193,7 +193,7 @@ const aiDecisionHoldem = async (indicator, survivor, hands, money, pot, is_final
   
   mention += `\n\n**Now, choose your action:**`;
   mention += `\n- Reply only with 'Fold.', 'Call.', or 'Raise.' first. (If raising, specify amount of additional bet with call money).`;
-  mention += `\n- Raise is from ${raised === 0 ? pot * 0.1 : raised*2}, so if you do minimal raise, then ${money[indicator] - (raised - turnmoneymanage[indicator]) - (raised === 0 ? pot * 0.1 : raised*2)} left.`;
+  mention += `\n- Raise is from ${raised === 0 ? pot * 0.1 : raised}, so if you do minimal raise, then ${money[indicator] - (raised - turnmoneymanage[indicator]) - (raised === 0 ? pot * 0.1 : raised)} left.`;
   mention += `\n- After your decision, explain your reasoning in 3-4 ${languageset} sentences using probability and logic based on GTO or exploitative poker theory.`;
 
   let schema = {
@@ -209,7 +209,7 @@ const aiDecisionHoldem = async (indicator, survivor, hands, money, pot, is_final
       "amount": {
         "type": "number",
         "enum": generateAmountEnum(money, pot, indicator, raised - turnmoneymanage[indicator], raised), 
-        "description": "You should fill it 0 when you do fold or call. The additional bet amount in chips. The minimum value is at least half the pot, and the maximum value is the player's remaining stack."
+        "description": "You should fill it 0 when you do fold or call. The additional bet amount in chips. The minimum value is at least 1/10 of the pot, and the maximum value is the player's remaining stack."
       },
       "explanation": {
         "type": "string",
@@ -234,8 +234,10 @@ const aiDecisionHoldem = async (indicator, survivor, hands, money, pot, is_final
 };
 
 const generateAmountEnum = (money, pot, indicator, callfor, raised) => {
-  const minTempAmount = Math.ceil((raised === 0 ? pot * 0.1 : raised*2) / 100) * 100;
-  const maxTempAmount = Math.floor(Math.max(money[indicator]-callfor, 0) / 100) * 100;
+  const available = Math.max(money[indicator] - callfor, 0);
+  const baseMin = raised === 0 ? pot * 0.1 : raised;
+  const minTempAmount = Math.ceil(baseMin / 100) * 100;
+  const maxTempAmount = Math.floor(available / 100) * 100;
 
   let stepSizes = [100, 500, 1000, 5000, 10000];
   let stepIndex = 0;
@@ -249,16 +251,22 @@ const generateAmountEnum = (money, pot, indicator, callfor, raised) => {
     estimatedCount = (maxTempAmount - minTempAmount) / step;
   }
 
-  const minAmount = Math.ceil((raised === 0 ? pot * 0.1 : raised*2) / step) * step;
-  const maxAmount = Math.floor(Math.max(money[indicator]-callfor, 0) / step) * step;
+  const minAmount = Math.ceil(baseMin / step) * step;
+  const maxAmount = Math.floor(available / step) * step;
 
-  let amountEnum = [0];
+  if (maxAmount < minAmount) {
+    return [0];
+  }
+
+  let amountEnum = [];
   for (let amount = minAmount; amount <= maxAmount; amount += step) {
     amountEnum.push(amount);
   }
-  if (amountEnum.length === 1) {
-    amountEnum.push(maxAmount);
+
+  if (amountEnum.length === 0) {
+    return [0];
   }
+  
   return amountEnum;
 }
 
@@ -327,7 +335,7 @@ const DecisionFBHoldem = async (indicator, survivor, hands, money, pot, is_final
 
   mention += `\n\n**Now, provide your response:**`;
   mention += `\n- Reply only with 'Fold.', 'Call.', or 'Raise.' first. (If raising, specify amount).`;
-  mention += `\n- Raise is from ${raised === 0 ? pot * 0.1 : raised*2}, so if you do minimal raise, then ${money[indicator] - (raised - turnmoneymanage[indicator]) - (raised === 0 ? pot * 0.1 : raised*2)} left.`;
+  mention += `\n- Raise is from ${raised === 0 ? pot * 0.1 : raised}, so if you do minimal raise, then ${money[indicator] - (raised - turnmoneymanage[indicator]) - (raised === 0 ? pot * 0.1 : raised)} left.`;
   mention += `\n- Then, provide a strategic explanation in 3-4 ${languageset} sentences using probability and logic based on GTO or exploitative poker theory.`;
 
   let schema = {
@@ -341,7 +349,7 @@ const DecisionFBHoldem = async (indicator, survivor, hands, money, pot, is_final
       "amount": {
         "type": "number",
         "enum": generateAmountEnum(money, pot, indicator, raised - turnmoneymanage[indicator], raised),
-        "description": "You should fill it 0 when you do fold or call. The bet amount in chips, increasing in increments of 100. The minimum value is at least half the pot, and the maximum value is the player's remaining stack."
+        "description": "You should fill it 0 when you do fold or call. The bet amount in chips, increasing in increments of 100. The minimum value is at least 1/10 of the pot, and the maximum value is the player's remaining stack."
       },
       "explanation": {
         "type": "string",
