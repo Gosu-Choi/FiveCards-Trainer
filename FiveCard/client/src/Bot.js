@@ -119,7 +119,7 @@ const aiDecisionHoldem = async (indicator, survivor, hands, money, pot, is_final
   // Community Cards
   if (community.length > 0) {
     mention += `\n\n### Community Cards:`;
-    mention += `\n- The board is: ${convertCardList(community)}, so your possible hand is ${calculateHandRange(hands[indicator], community)}`;
+    mention += `\n- The board is: ${convertCardList(community)}, so your possible hand is ${JSON.stringify(calculateHandRange(hands[indicator], community))}`;
     mention += `\n- And you can guess about other opponents' hole cards with following information.`
     // mention += `\n- Possible hands other players might have based on the board: [Analyze their potential hands].`;
   } else {
@@ -277,7 +277,7 @@ const DecisionFBHoldem = async (indicator, survivor, hands, money, pot, is_final
   // Community Cards
   if (community.length > 0) {
     mention += `\n\n### Community Cards:`;
-    mention += `\n- The board is: ${convertCardList(community)}, so my possible hand is ${calculateHandRange(hands[indicator], community)}`;
+    mention += `\n- The board is: ${convertCardList(community)}, so my possible hand is ${JSON.stringify(calculateHandRange(hands[indicator], community))}`;
     mention += `\n- You should assess my hand strength and evaluate possible opponent hands based on this board.`;
   } else {
     mention += `\n- This is pre-flop, so community cards are not revealed yet.`;
