@@ -1,4 +1,4 @@
-import { determineWinner, facemaker } from './pokerHands';
+import { determineWinner, facemaker, calculateHandRange } from './pokerHands';
 
 const handleSendMessage = async (message, schema = null) => {
   const requestBody = { message };
@@ -114,8 +114,8 @@ const aiDecisionHoldem = async (indicator, survivor, hands, money, pot, is_final
   let mention = `You are playing TEXAS HOLD'EM. Analyze the current game state and decide your best action.`;
   
   // AI's Hole Cards
-  mention += `\n### Your Hand:`;
-  mention += `\n- Hole cards: ${convertCardList(hands[indicator])}.`;
+  mention += `\n### Your Hole cards:`;
+  mention += `\n${convertCardList(hands[indicator])}, so your hand is ${calculateHandRange(hands[indicator], community)}`;
   
   // Community Cards
   if (community.length > 0) {
@@ -223,7 +223,7 @@ const aiDecisionHoldem = async (indicator, survivor, hands, money, pot, is_final
     ],
     "additionalProperties": false
   }
-  console.log(schema)
+  console.log(mention)
   const decision_notjson = await handleSendMessage(mention, schema);
   const decision = JSON.parse(decision_notjson)
   return new Promise((resolve) => {
