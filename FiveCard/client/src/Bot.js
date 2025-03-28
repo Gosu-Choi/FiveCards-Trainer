@@ -123,6 +123,7 @@ const aiDecisionHoldem = async (indicator, survivor, hands, money, pot, is_final
       console.log("hi!")
       mention += `\n- The board is: ${convertCardList(community)}, so your possible hand for now is ${JSON.stringify(calculateHandRange(hands[indicator], community).possibleRanks)}, of course the probability is varying.`;
       console.log(":(")
+      console.log(mention)
     } else {
       mention += `\n- The board is: ${convertCardList(community)}, so your hand is ${JSON.stringify(calculateHandRange(hands[indicator], community).possibleRanks)}.`;
     }
@@ -288,6 +289,7 @@ const DecisionFBHoldem = async (indicator, survivor, hands, money, pot, is_final
       console.log("Hi!")
       mention += `\n- The board is: ${convertCardList(community)}, so my possible hand for now is ${JSON.stringify(calculateHandRange(hands[indicator], community))}, of course the probability is varying.`;
       console.log(":(")
+      console.log(mention)
     } else {
       mention += `\n- The board is: ${convertCardList(community)}, so my hand is ${JSON.stringify(calculateHandRange(hands[indicator], community))}.`;
     }
