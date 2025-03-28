@@ -243,7 +243,6 @@ function determineWinner7(hands, activity){
 }
 
 function calculateHandRange(hole, board, exclude = []) {
-  // 내 핸드를 계산하는 경우 (hole이 제공됨)
   if (hole.length > 0) {
     const currentCards = hole.concat(board);
     const unknownCount = 5 - board.length;

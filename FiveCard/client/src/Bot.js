@@ -230,7 +230,6 @@ const aiDecisionHoldem = async (indicator, survivor, hands, money, pot, is_final
   
   const decision_notjson = await handleSendMessage(mention, schema);
   const decision = JSON.parse(decision_notjson)
-  console.log(mention)
   return new Promise((resolve) => {
     setTimeout(() => {
       resolve({ decision, mention });
@@ -372,7 +371,6 @@ const DecisionFBHoldem = async (indicator, survivor, hands, money, pot, is_final
 
   const decision_notjson = await handleSendMessage(mention, schema);
   const decision = JSON.parse(decision_notjson)
-  console.log(mention)
   return new Promise((resolve) => {
     setTimeout(() => {
       resolve({ decision, mention });
