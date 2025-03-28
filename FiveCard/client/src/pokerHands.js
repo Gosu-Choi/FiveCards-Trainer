@@ -242,50 +242,92 @@ function determineWinner7(hands, activity){
   }
 }
 
-function calculateHandRange(holeCards, boardCards, exclude=[]) {
-  if (holeCards.length !== 0){
-    const currentCards = holeCards.concat(boardCards);
-    const unknownCount = 5 - boardCards.length;
-  
-    const deck = [];
-    for (let r of ranks) {
-      for (let s of suits) {
-        const card = r + s;
-        if (!currentCards.includes(card)) {
-          deck.push(card);
+function calculateHandRange(holeCards, boardCards, exclude=[], sign=true) {
+  if (sign){
+    if (holeCards.length !== 0){
+      const currentCards = holeCards.concat(boardCards);
+      const unknownCount = 5 - boardCards.length;
+    
+      const deck = [];
+      for (let r of ranks) {
+        for (let s of suits) {
+          const card = r + s;
+          if (!currentCards.includes(card)) {
+            deck.push(card);
+          }
         }
       }
-    }
-  
-    const unknownCombinations = combinations(deck, unknownCount);
-  
-    const possibleRanksSet = new Set();
-  
-    unknownCombinations.forEach(unknown => {
-      const finalBoard = boardCards.concat(unknown);
-      const finalHand = holeCards.concat(finalBoard);
-  
-      let bestHand;
-      if (finalHand.length > 5) {
-        bestHand = handDecision([finalHand])[0];
-      } else {
-        bestHand = finalHand;
+    
+      const unknownCombinations = combinations(deck, unknownCount);
+    
+      const possibleRanksSet = new Set();
+    
+      unknownCombinations.forEach(unknown => {
+        const finalBoard = boardCards.concat(unknown);
+        const finalHand = holeCards.concat(finalBoard);
+    
+        let bestHand;
+        if (finalHand.length > 5) {
+          bestHand = handDecision([finalHand])[0];
+        } else {
+          bestHand = finalHand;
+        }
+    
+        const evalResult = evaluateHand(bestHand, false);
+        possibleRanksSet.add(evalResult.rank);
+      });
+    
+      const possibleRanks = Array.from(possibleRanksSet);
+      possibleRanks.sort((a, b) => handRanks[a] - handRanks[b]);
+    
+      const minRank = possibleRanks[0];
+      const maxRank = possibleRanks[possibleRanks.length - 1];
+    
+      return { possibleRanks, minRank, maxRank };
+    } else {
+      const currentCards = exclude.concat(boardCards);
+      const unknownCount = 2;
+    
+      const deck = [];
+      for (let r of ranks) {
+        for (let s of suits) {
+          const card = r + s;
+          if (!currentCards.includes(card)) {
+            deck.push(card);
+          }
+        }
       }
-  
-      const evalResult = evaluateHand(bestHand, false);
-      possibleRanksSet.add(evalResult.rank);
-    });
-  
-    const possibleRanks = Array.from(possibleRanksSet);
-    possibleRanks.sort((a, b) => handRanks[a] - handRanks[b]);
-  
-    const minRank = possibleRanks[0];
-    const maxRank = possibleRanks[possibleRanks.length - 1];
-  
-    return { possibleRanks, minRank, maxRank };
+    
+      const unknownCombinations = combinations(deck, unknownCount);
+    
+      const possibleRanksSet = new Set();
+    
+      unknownCombinations.forEach(unknown => {
+        const finalBoard = boardCards.concat(unknown);
+        const finalHand = holeCards.concat(finalBoard);
+    
+        let bestHand;
+        if (finalHand.length > 5) {
+          bestHand = handDecision([finalHand])[0];
+        } else {
+          bestHand = finalHand;
+        }
+    
+        const evalResult = evaluateHand(bestHand, false);
+        possibleRanksSet.add(evalResult.rank);
+      });
+    
+      const possibleRanks = Array.from(possibleRanksSet);
+      possibleRanks.sort((a, b) => handRanks[a] - handRanks[b]);
+    
+      const minRank = possibleRanks[0];
+      const maxRank = possibleRanks[possibleRanks.length - 1];
+    
+      return { possibleRanks, minRank, maxRank };
+    }
   } else {
-    const currentCards = exclude.concat(boardCards);
-    const unknownCount = 2;
+    const currentCards = holeCards.concat(boardCards);
+    const unknownCount = 0;
   
     const deck = [];
     for (let r of ranks) {

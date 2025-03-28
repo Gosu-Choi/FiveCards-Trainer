@@ -120,7 +120,7 @@ const aiDecisionHoldem = async (indicator, survivor, hands, money, pot, is_final
   if (community.length > 0) {
     mention += `\n\n### Community Cards:`;
     if (community.length !== 5){
-      mention += `\n- The board is: ${convertCardList(community)}, so your potential hand range based on current hole cards and possible future community cards is: ${JSON.stringify(calculateHandRange(hands[indicator], community).possibleRanks)}, of course the probability is varying.`;
+      mention += `\n- The board is: ${convertCardList(community)}. For now, you are having **${JSON.stringify(calculateHandRange(hands[indicator], community, [], false).maxRank)}**. And your potential hand range based on current hole cards and possible future community cards is: ${JSON.stringify(calculateHandRange(hands[indicator], community).possibleRanks)}, of course the probability is varying.`;
     } else {
       mention += `\n- The board is: ${convertCardList(community)}, so your hand is ${JSON.stringify(calculateHandRange(hands[indicator], community).possibleRanks)}.`;
     }
@@ -231,6 +231,7 @@ const aiDecisionHoldem = async (indicator, survivor, hands, money, pot, is_final
   
   const decision_notjson = await handleSendMessage(mention, schema);
   const decision = JSON.parse(decision_notjson)
+  console.log(mention)
   return new Promise((resolve) => {
     setTimeout(() => {
       resolve({ decision, mention });
@@ -284,8 +285,7 @@ const DecisionFBHoldem = async (indicator, survivor, hands, money, pot, is_final
   if (community.length > 0) {
     mention += `\n\n### Community Cards:`;
     if (community.length !== 5){
-      mention += `\n- The board is: ${convertCardList(community)}, so my potential hand range based on current hole cards and possible future community cards is: ${JSON.stringify(calculateHandRange(hands[indicator], community).possibleRanks)}, of course the probability is varying.`;
-      console.log(mention)
+      mention += `\n- The board is: ${convertCardList(community)}. For now, I am having **${JSON.stringify(calculateHandRange(hands[indicator], community, [], false).maxRank)}**. And my potential hand range based on current hole cards and possible future community cards is: ${JSON.stringify(calculateHandRange(hands[indicator], community).possibleRanks)}, of course the probability is varying.`;
     } else {
       mention += `\n- The board is: ${convertCardList(community)}, so my hand is ${JSON.stringify(calculateHandRange(hands[indicator], community).possibleRanks)}.`;
     }
@@ -370,7 +370,7 @@ const DecisionFBHoldem = async (indicator, survivor, hands, money, pot, is_final
     "required": ["action", "amount", "explanation"],
     "additionalProperties": false
   };
-
+  console.log(mention)
   const decision_notjson = await handleSendMessage(mention, schema);
   const decision = JSON.parse(decision_notjson)
   return new Promise((resolve) => {
