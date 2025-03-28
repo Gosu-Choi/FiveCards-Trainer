@@ -285,7 +285,7 @@ function calculateHandRange(holeCards, boardCards, exclude=[]) {
     return { possibleRanks, minRank, maxRank };
   } else {
     const currentCards = exclude.concat(boardCards);
-    const unknownCount = 7 - boardCards.length;
+    const unknownCount = 2;
   
     const deck = [];
     for (let r of ranks) {

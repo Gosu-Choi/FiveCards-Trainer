@@ -120,7 +120,7 @@ const aiDecisionHoldem = async (indicator, survivor, hands, money, pot, is_final
   if (community.length > 0) {
     mention += `\n\n### Community Cards:`;
     if (community.length !== 5){
-      mention += `\n- The board is: ${convertCardList(community)}, so your possible hand for now is ${JSON.stringify(calculateHandRange(hands[indicator], community).possibleRanks)}, of course the probability is varying.`;
+      mention += `\n- The board is: ${convertCardList(community)}, so your potential hand range based on current hole cards and possible future community cards is: ${JSON.stringify(calculateHandRange(hands[indicator], community))}, of course the probability is varying.`;
     } else {
       mention += `\n- The board is: ${convertCardList(community)}, so your hand is ${JSON.stringify(calculateHandRange(hands[indicator], community).possibleRanks)}.`;
     }
@@ -148,7 +148,7 @@ const aiDecisionHoldem = async (indicator, survivor, hands, money, pot, is_final
     }
   }
   if (community.length > 0) {
-    mention += `\n### Opponents' possible Hand Range is: ${JSON.stringify(calculateHandRange([], community, hands[indicator]).possibleRanks)}`
+    mention += `\n### Opponent's current possible hand range exactly for now, based on the known board (excluding my cards) is: ${JSON.stringify(calculateHandRange([], community, hands[indicator]).possibleRanks)}`
     console.log(mention)
   }
   mention += `\n\n### Decision Making:`;
@@ -284,7 +284,7 @@ const DecisionFBHoldem = async (indicator, survivor, hands, money, pot, is_final
   if (community.length > 0) {
     mention += `\n\n### Community Cards:`;
     if (community.length !== 5){
-      mention += `\n- The board is: ${convertCardList(community)}, so my possible hand for now is ${JSON.stringify(calculateHandRange(hands[indicator], community))}, of course the probability is varying.`;
+      mention += `\n- The board is: ${convertCardList(community)}, so my potential hand range based on current hole cards and possible future community cards is: ${JSON.stringify(calculateHandRange(hands[indicator], community))}, of course the probability is varying.`;
       console.log(mention)
     } else {
       mention += `\n- The board is: ${convertCardList(community)}, so my hand is ${JSON.stringify(calculateHandRange(hands[indicator], community))}.`;
@@ -313,8 +313,7 @@ const DecisionFBHoldem = async (indicator, survivor, hands, money, pot, is_final
     }
   }
   if (community.length > 0) {
-    mention += `\n### Opponents' possible Hand Range is: ${JSON.stringify(calculateHandRange([], community, hands[indicator]).possibleRanks)}`
-    console.log(JSON.stringify(calculateHandRange([], community, hands[indicator]).possibleRanks))
+    mention += `\n### Opponent's current possible hand range exactly for now, based on the known board (excluding my cards) is: ${JSON.stringify(calculateHandRange([], community, hands[indicator]).possibleRanks)}`
   }
   if (raised - turnmoneymanage[indicator] === 0 && JSON.stringify(choice[0][choice[0].length - 1]) === JSON.stringify("call")){
     mention += `\nI did check for now.`
