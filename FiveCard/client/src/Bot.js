@@ -118,7 +118,7 @@ const aiDecisionHoldem = async (indicator, survivor, hands, money, pot, is_final
   
   // Community Cards
   if (community.length > 0) {
-    mention += `\n\n### Community Cards:`;    
+    mention += `\n\n### Community Cards:`;
     if (community.length !== 5){
       mention += `\n- The board is: ${convertCardList(community)}, so your possible hand for now is ${JSON.stringify(calculateHandRange(hands[indicator], community).possibleRanks)}, of course the probability is varying.`;
     } else {
@@ -284,9 +284,9 @@ const DecisionFBHoldem = async (indicator, survivor, hands, money, pot, is_final
   if (community.length > 0) {
     mention += `\n\n### Community Cards:`;
     if (community.length !== 5){
-      mention += `\n- The board is: ${convertCardList(community)}, so my possible hand for now is ${JSON.stringify(calculateHandRange(hands[indicator], community).possibleRanks)}, of course the probability is varying.`;
+      mention += `\n- The board is: ${convertCardList(community)}, so my possible hand for now is ${JSON.stringify(calculateHandRange(hands[indicator], community))}, of course the probability is varying.`;
     } else {
-      mention += `\n- The board is: ${convertCardList(community)}, so my hand is ${JSON.stringify(calculateHandRange(hands[indicator], community).possibleRanks)}.`;
+      mention += `\n- The board is: ${convertCardList(community)}, so my hand is ${JSON.stringify(calculateHandRange(hands[indicator], community))}.`;
     }
     mention += `\n- You should assess my hand strength and evaluate possible opponent hands based on this board.`;
   } else {
