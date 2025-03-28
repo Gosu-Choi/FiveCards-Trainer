@@ -122,7 +122,6 @@ const aiDecisionHoldem = async (indicator, survivor, hands, money, pot, is_final
     if (community.length !== 5){
       console.log("hi!")
       mention += `\n- The board is: ${convertCardList(community)}, so your possible hand for now is ${JSON.stringify(calculateHandRange(hands[indicator], community).possibleRanks)}, of course the probability is varying.`;
-      console.log(":(")
       console.log(mention)
     } else {
       mention += `\n- The board is: ${convertCardList(community)}, so your hand is ${JSON.stringify(calculateHandRange(hands[indicator], community).possibleRanks)}.`;
@@ -151,7 +150,9 @@ const aiDecisionHoldem = async (indicator, survivor, hands, money, pot, is_final
     }
   }
   if (community.length > 0) {
+    console.log(":(")
     mention += `\n### Opponents' possible Hand Range is: ${JSON.stringify(calculateHandRange([], community, hands[indicator]).possibleRanks)}`
+    console.log(mention)
   }
   mention += `\n\n### Decision Making:`;
   mention += `\n- You should pretend to be a ${style} holdem player. (Avoid mentioning about it in your answer.)`;
@@ -317,7 +318,9 @@ const DecisionFBHoldem = async (indicator, survivor, hands, money, pot, is_final
     }
   }
   if (community.length > 0) {
+    console.log(":(")
     mention += `\n### Opponents' possible Hand Range is: ${JSON.stringify(calculateHandRange([], community, hands[indicator]).possibleRanks)}`
+    console.log(JSON.stringify(calculateHandRange([], community, hands[indicator]).possibleRanks))
   }
   if (raised - turnmoneymanage[indicator] === 0 && JSON.stringify(choice[0][choice[0].length - 1]) === JSON.stringify("call")){
     mention += `\nI did check for now.`
