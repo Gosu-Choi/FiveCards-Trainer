@@ -114,19 +114,18 @@ const aiDecisionHoldem = async (indicator, survivor, hands, money, pot, is_final
   let mention = `You are playing TEXAS HOLD'EM. Analyze the current game state and decide your best action.`;
   
   // AI's Hole Cards
-  mention += `\n### Your Hole cards:`;
-  mention += `\n${convertCardList(hands[indicator])}, so your hand is ${calculateHandRange(hands[indicator], community)}`;
+  mention += `\n### Your Hole cards: ${convertCardList(hands[indicator])}`;
   
   // Community Cards
   if (community.length > 0) {
     mention += `\n\n### Community Cards:`;
-    mention += `\n- The board is: ${convertCardList(community)}.`;
+    mention += `\n- The board is: ${convertCardList(community)}, so your possible hand is ${calculateHandRange(hands[indicator], community)}`;
     mention += `\n- And you can guess about other opponents' hole cards with following information.`
     // mention += `\n- Possible hands other players might have based on the board: [Analyze their potential hands].`;
   } else {
     mention += `\n- This is pre-flop, so community cards are not revealed yet.`;
   }
-  
+  console.log(mention)
   // Betting Information
   mention += `\n\n### Betting Information:`;
   mention += `\n- Your current stack: ${money[indicator]}, and big blind is 100.`;
@@ -223,7 +222,7 @@ const aiDecisionHoldem = async (indicator, survivor, hands, money, pot, is_final
     ],
     "additionalProperties": false
   }
-  console.log(mention)
+  
   const decision_notjson = await handleSendMessage(mention, schema);
   const decision = JSON.parse(decision_notjson)
   return new Promise((resolve) => {
@@ -273,13 +272,12 @@ const generateAmountEnum = (money, pot, indicator, callfor, raised) => {
 const DecisionFBHoldem = async (indicator, survivor, hands, money, pot, is_final, choice, raised, community, choicehistory, languageset, turnmoneymanage) => {
   let mention = `I am playing TEXAS HOLD'EM. Analyze my decision and provide feedback on whether it was correct.`; 
   // AI's Hole Cards
-  mention += `\n\n### My Hand:`;
-  mention += `\n- Hole cards: ${convertCardList(hands[indicator])}.`;
+  mention += `\n\n### My Hole cards: ${convertCardList(hands[indicator])}`;
 
   // Community Cards
   if (community.length > 0) {
     mention += `\n\n### Community Cards:`;
-    mention += `\n- The board is: ${convertCardList(community)}.`;
+    mention += `\n- The board is: ${convertCardList(community)}, so my possible hand is ${calculateHandRange(hands[indicator], community)}`;
     mention += `\n- You should assess my hand strength and evaluate possible opponent hands based on this board.`;
   } else {
     mention += `\n- This is pre-flop, so community cards are not revealed yet.`;
