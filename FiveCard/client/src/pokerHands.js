@@ -242,60 +242,91 @@ function determineWinner7(hands, activity){
   }
 }
 
-function calculateHandRange(holeCards, boardCards) {
-  // 현재 가지고 있는 카드와 공개된 커뮤니티 카드를 합칩니다.
-  const currentCards = holeCards.concat(boardCards);
-  // 텍사스 홀덤은 총 5장의 커뮤니티 카드이므로,
-  // 아직 공개되지 않은 카드의 수를 계산합니다.
-  const unknownCount = 5 - boardCards.length;
-
-  // 전체 덱(52장)에서 현재 사용된 카드를 제외한 카드들을 생성합니다.
-  const deck = [];
-  for (let r of ranks) {
-    for (let s of suits) {
-      const card = r + s;
-      if (!currentCards.includes(card)) {
-        deck.push(card);
+function calculateHandRange(hole, board, exclude = []) {
+  // 내 핸드를 계산하는 경우 (hole이 제공됨)
+  if (hole.length > 0) {
+    const currentCards = hole.concat(board);
+    const unknownCount = 5 - board.length;
+    const deck = [];
+    for (let r of ranks) {
+      for (let s of suits) {
+        const card = r + s;
+        if (!currentCards.includes(card)) {
+          deck.push(card);
+        }
       }
     }
-  }
-
-  // 덱에서 아직 공개되지 않은 unknownCount장의 카드 조합을 구합니다.
-  const unknownCombinations = combinations(deck, unknownCount);
-
-  // 가능한 핸드 랭크들을 저장할 Set (중복 제거)
-  const possibleRanksSet = new Set();
-
-  // 각 미완성 보드의 경우의 수마다 최종 핸드를 평가합니다.
-  unknownCombinations.forEach(unknown => {
-    // 최종 커뮤니티 카드는 공개된 카드와 미공개 카드의 조합입니다.
-    const finalBoard = boardCards.concat(unknown);
-    // 최종 핸드는 홀 카드와 최종 커뮤니티 카드를 합한 것입니다.
-    const finalHand = holeCards.concat(finalBoard);
-
-    // 최종 핸드가 5장보다 많다면 (일반적으로 7장이 됨)
-    // 미리 정의된 handDecision 함수를 사용해 최적의 5장을 선택합니다.
-    let bestHand;
-    if (finalHand.length > 5) {
-      bestHand = handDecision([finalHand])[0];
-    } else {
-      bestHand = finalHand;
+    
+    const unknownCombinations = combinations(deck, unknownCount);
+    const possibleRanksSet = new Set();
+    
+    unknownCombinations.forEach(unknown => {
+      const finalBoard = board.concat(unknown);
+      const finalHand = hole.concat(finalBoard);
+      
+      let bestHand;
+      if (finalHand.length > 5) {
+        bestHand = handDecision([finalHand])[0];
+      } else {
+        bestHand = finalHand;
+      }
+      
+      const evalResult = evaluateHand(bestHand, false);
+      possibleRanksSet.add(evalResult.rank);
+    });
+    
+    const possibleRanks = Array.from(possibleRanksSet);
+    possibleRanks.sort((a, b) => handRanks[a] - handRanks[b]);
+    const minRank = possibleRanks[0];
+    const maxRank = possibleRanks[possibleRanks.length - 1];
+    return { possibleRanks, minRank, maxRank };
+    
+  } else {
+    // 상대방의 핸드 계산: hole은 빈 배열로, exclude에 내가 가진 카드 등 상대가 가질 수 없는 카드가 들어옵니다.
+    // board와 exclude를 제외한 카드가 상대방이 가질 수 있는 전체 카드입니다.
+    const currentCards = board.concat(exclude);
+    const deck = [];
+    for (let r of ranks) {
+      for (let s of suits) {
+        const card = r + s;
+        if (!currentCards.includes(card)) {
+          deck.push(card);
+        }
+      }
     }
-
-    // 최적의 5장을 평가하여 핸드 랭크를 구합니다.
-    const evalResult = evaluateHand(bestHand, false);
-    possibleRanksSet.add(evalResult.rank);
-  });
-
-  // Set을 배열로 변환하고, handRanks 객체의 값(숫자) 순서에 따라 정렬합니다.
-  const possibleRanks = Array.from(possibleRanksSet);
-  possibleRanks.sort((a, b) => handRanks[a] - handRanks[b]);
-
-  // 최저 랭크와 최고 랭크를 결정합니다.
-  const minRank = possibleRanks[0];
-  const maxRank = possibleRanks[possibleRanks.length - 1];
-
-  return { possibleRanks, minRank, maxRank };
+    
+    // 상대방의 홀 카드는 2장 조합입니다.
+    const candidateHoles = combinations(deck, 2);
+    const unknownCount = 5 - board.length;
+    const possibleRanksSet = new Set();
+    
+    candidateHoles.forEach(candidateHole => {
+      // 홀 카드를 선택한 후, 해당 카드를 제외한 덱에서 미공개 보드 카드 조합을 생성합니다.
+      const deckForBoard = deck.filter(card => !candidateHole.includes(card));
+      const unknownBoardCombinations = combinations(deckForBoard, unknownCount);
+      
+      unknownBoardCombinations.forEach(unknown => {
+        const finalBoard = board.concat(unknown);
+        const finalHand = candidateHole.concat(finalBoard);
+        
+        let bestHand;
+        if (finalHand.length > 5) {
+          bestHand = handDecision([finalHand])[0];
+        } else {
+          bestHand = finalHand;
+        }
+        
+        const evalResult = evaluateHand(bestHand, false);
+        possibleRanksSet.add(evalResult.rank);
+      });
+    });
+    
+    const possibleRanks = Array.from(possibleRanksSet);
+    possibleRanks.sort((a, b) => handRanks[a] - handRanks[b]);
+    const minRank = possibleRanks[0];
+    const maxRank = possibleRanks[possibleRanks.length - 1];
+    return { possibleRanks, minRank, maxRank };
+  }
 }
 
 module.exports = { evaluateHand, determineWinner, determineWinner7, facemaker, calculateHandRange };

@@ -118,14 +118,17 @@ const aiDecisionHoldem = async (indicator, survivor, hands, money, pot, is_final
   
   // Community Cards
   if (community.length > 0) {
-    mention += `\n\n### Community Cards:`;
-    mention += `\n- The board is: ${convertCardList(community)}, so your possible hand is ${JSON.stringify(calculateHandRange(hands[indicator], community))}`;
+    mention += `\n\n### Community Cards:`;    
+    if (community.length !== 5){
+      mention += `\n- The board is: ${convertCardList(community)}, so your possible hand for now is ${JSON.stringify(calculateHandRange(hands[indicator], community).possibleRanks)}, of course the probability is varying.`;
+    } else {
+      mention += `\n- The board is: ${convertCardList(community)}, so your hand is ${JSON.stringify(calculateHandRange(hands[indicator], community).possibleRanks)}.`;
+    }
     mention += `\n- And you can guess about other opponents' hole cards with following information.`
     // mention += `\n- Possible hands other players might have based on the board: [Analyze their potential hands].`;
   } else {
     mention += `\n- This is pre-flop, so community cards are not revealed yet.`;
   }
-  console.log(mention)
   // Betting Information
   mention += `\n\n### Betting Information:`;
   mention += `\n- Your current stack: ${money[indicator]}, and big blind is 100.`;
@@ -144,7 +147,9 @@ const aiDecisionHoldem = async (indicator, survivor, hands, money, pot, is_final
       mention += ` Stack: ${money[i]}.`;
     }
   }
-  
+  if (community.length > 0) {
+    mention += `\n### Opponents' possible Hand Range is: ${JSON.stringify(calculateHandRange([], community, hands[indicator]).possibleRanks)}`
+  }
   mention += `\n\n### Decision Making:`;
   mention += `\n- You should pretend to be a ${style} holdem player. (Avoid mentioning about it in your answer.)`;
   mention += `\n- Do you currently have a strong hand, or are you drawing?`;
@@ -277,7 +282,11 @@ const DecisionFBHoldem = async (indicator, survivor, hands, money, pot, is_final
   // Community Cards
   if (community.length > 0) {
     mention += `\n\n### Community Cards:`;
-    mention += `\n- The board is: ${convertCardList(community)}, so my possible hand is ${JSON.stringify(calculateHandRange(hands[indicator], community))}`;
+    if (community.length !== 5){
+      mention += `\n- The board is: ${convertCardList(community)}, so my possible hand for now is ${JSON.stringify(calculateHandRange(hands[indicator], community).possibleRanks)}, of course the probability is varying.`;
+    } else {
+      mention += `\n- The board is: ${convertCardList(community)}, so my hand is ${JSON.stringify(calculateHandRange(hands[indicator], community).possibleRanks)}.`;
+    }
     mention += `\n- You should assess my hand strength and evaluate possible opponent hands based on this board.`;
   } else {
     mention += `\n- This is pre-flop, so community cards are not revealed yet.`;
@@ -301,7 +310,9 @@ const DecisionFBHoldem = async (indicator, survivor, hands, money, pot, is_final
       mention += ` Stack: ${money[i]}.`;
     }
   }
-
+  if (community.length > 0) {
+    mention += `\n### Opponents' possible Hand Range is: ${JSON.stringify(calculateHandRange([], community, hands[indicator]).possibleRanks)}`
+  }
   if (raised - turnmoneymanage[indicator] === 0 && JSON.stringify(choice[0][choice[0].length - 1]) === JSON.stringify("call")){
     mention += `\nI did check for now.`
     let decision = {};
