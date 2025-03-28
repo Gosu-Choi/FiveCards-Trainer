@@ -242,10 +242,11 @@ function determineWinner7(hands, activity){
   }
 }
 
-function calculateHandRange(hole, board, exclude = []) {
-  if (hole.length > 0) {
-    const currentCards = hole.concat(board);
-    const unknownCount = 5 - board.length;
+function calculateHandRange(holeCards, boardCards, exclude=[]) {
+  if (holeCards.length !== 0){
+    const currentCards = holeCards.concat(boardCards);
+    const unknownCount = 5 - boardCards.length;
+  
     const deck = [];
     for (let r of ranks) {
       for (let s of suits) {
@@ -255,35 +256,37 @@ function calculateHandRange(hole, board, exclude = []) {
         }
       }
     }
-    
+  
     const unknownCombinations = combinations(deck, unknownCount);
+  
     const possibleRanksSet = new Set();
-    
+  
     unknownCombinations.forEach(unknown => {
-      const finalBoard = board.concat(unknown);
-      const finalHand = hole.concat(finalBoard);
-      
+      const finalBoard = boardCards.concat(unknown);
+      const finalHand = holeCards.concat(finalBoard);
+  
       let bestHand;
       if (finalHand.length > 5) {
         bestHand = handDecision([finalHand])[0];
       } else {
         bestHand = finalHand;
       }
-      
+  
       const evalResult = evaluateHand(bestHand, false);
       possibleRanksSet.add(evalResult.rank);
     });
-    
+  
     const possibleRanks = Array.from(possibleRanksSet);
     possibleRanks.sort((a, b) => handRanks[a] - handRanks[b]);
+  
     const minRank = possibleRanks[0];
     const maxRank = possibleRanks[possibleRanks.length - 1];
+  
     return { possibleRanks, minRank, maxRank };
-    
   } else {
-    // 상대방의 핸드 계산: hole은 빈 배열로, exclude에 내가 가진 카드 등 상대가 가질 수 없는 카드가 들어옵니다.
-    // board와 exclude를 제외한 카드가 상대방이 가질 수 있는 전체 카드입니다.
-    const currentCards = board.concat(exclude);
+    const currentCards = exclude.concat(boardCards);
+    const unknownCount = 7 - boardCards.length;
+  
     const deck = [];
     for (let r of ranks) {
       for (let s of suits) {
@@ -293,39 +296,35 @@ function calculateHandRange(hole, board, exclude = []) {
         }
       }
     }
-    
-    // 상대방의 홀 카드는 2장 조합입니다.
-    const candidateHoles = combinations(deck, 2);
-    const unknownCount = 5 - board.length;
+  
+    const unknownCombinations = combinations(deck, unknownCount);
+  
     const possibleRanksSet = new Set();
-    
-    candidateHoles.forEach(candidateHole => {
-      // 홀 카드를 선택한 후, 해당 카드를 제외한 덱에서 미공개 보드 카드 조합을 생성합니다.
-      const deckForBoard = deck.filter(card => !candidateHole.includes(card));
-      const unknownBoardCombinations = combinations(deckForBoard, unknownCount);
-      
-      unknownBoardCombinations.forEach(unknown => {
-        const finalBoard = board.concat(unknown);
-        const finalHand = candidateHole.concat(finalBoard);
-        
-        let bestHand;
-        if (finalHand.length > 5) {
-          bestHand = handDecision([finalHand])[0];
-        } else {
-          bestHand = finalHand;
-        }
-        
-        const evalResult = evaluateHand(bestHand, false);
-        possibleRanksSet.add(evalResult.rank);
-      });
+  
+    unknownCombinations.forEach(unknown => {
+      const finalBoard = boardCards.concat(unknown);
+      const finalHand = holeCards.concat(finalBoard);
+  
+      let bestHand;
+      if (finalHand.length > 5) {
+        bestHand = handDecision([finalHand])[0];
+      } else {
+        bestHand = finalHand;
+      }
+  
+      const evalResult = evaluateHand(bestHand, false);
+      possibleRanksSet.add(evalResult.rank);
     });
-    
+  
     const possibleRanks = Array.from(possibleRanksSet);
     possibleRanks.sort((a, b) => handRanks[a] - handRanks[b]);
+  
     const minRank = possibleRanks[0];
     const maxRank = possibleRanks[possibleRanks.length - 1];
+  
     return { possibleRanks, minRank, maxRank };
   }
 }
+
 
 module.exports = { evaluateHand, determineWinner, determineWinner7, facemaker, calculateHandRange };
