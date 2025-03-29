@@ -334,7 +334,7 @@ function calculateHandRange(holeCards, boardCards, exclude=[], sign=true) {
   } else {
     const currentCards = holeCards.concat(boardCards);
     const unknownCount = 0;
-  
+
     const deck = [];
     for (let r of ranks) {
       for (let s of suits) {
@@ -344,35 +344,88 @@ function calculateHandRange(holeCards, boardCards, exclude=[], sign=true) {
         }
       }
     }
-  
+
     const unknownCombinations = combinations(deck, unknownCount);
-  
+
     const possibleRanksSet = new Set();
-  
+    let bestHandEval = null;
+
     unknownCombinations.forEach(unknown => {
       const finalBoard = boardCards.concat(unknown);
       const finalHand = holeCards.concat(finalBoard);
-  
+
       let bestHand;
       if (finalHand.length > 5) {
         bestHand = handDecision([finalHand])[0];
       } else {
         bestHand = finalHand;
       }
-  
+
       const evalResult = evaluateHand(bestHand, false);
       possibleRanksSet.add(evalResult.rank);
+
+      if (
+        !bestHandEval ||
+        handRanks[evalResult.rank] > handRanks[bestHandEval.rank] ||
+        (handRanks[evalResult.rank] === handRanks[bestHandEval.rank] &&
+        compareHands(bestHand, bestHandEval.bestHand, false) > 0)
+      ) {
+        bestHandEval = { ...evalResult, bestHand };
+      }
     });
-  
+
     const possibleRanks = Array.from(possibleRanksSet);
     possibleRanks.sort((a, b) => handRanks[a] - handRanks[b]);
-  
-    const minRank = possibleRanks[0];
-    const maxRank = possibleRanks[possibleRanks.length - 1];
-  
-    return { possibleRanks, minRank, maxRank };
+
+    return {
+      possibleRanks,
+      maxRank: makeHandName(bestHandEval.rank, bestHandEval.values)
+    };
   }
 }
 
+const cardName = (v) => {
+  const names = {
+    14: 'Ace',
+    13: 'King',
+    12: 'Queen',
+    11: 'Jack',
+    10: 'Ten',
+    9: 'Nine',
+    8: 'Eight',
+    7: 'Seven',
+    6: 'Six',
+    5: 'Five',
+    4: 'Four',
+    3: 'Three',
+    2: 'Two'
+  };
+  return names[v];
+};
+
+const makeHandName = (rank, values) => {
+  switch (rank) {
+    case 'OnePair':
+      return `One Pair of ${cardName(values[0])}s`;
+    case 'TwoPair':
+      return `Two Pair: ${cardName(values[0])}s and ${cardName(values[1])}s`;
+    case 'ThreeOfAKind':
+      return `Three of a Kind: ${cardName(values[0])}s`;
+    case 'FourOfAKind':
+      return `Four of a Kind: ${cardName(values[0])}s`;
+    case 'FullHouse':
+      return `Full House: ${cardName(values[0])}s over ${cardName(values[1])}s`;
+    case 'Straight':
+      return `Straight to ${cardName(values[0])}`;
+    case 'StraightFlush':
+      return `Straight Flush to ${cardName(values[0])}`;
+    case 'Flush':
+      return `Flush (high card ${cardName(values[0])})`;
+    case 'HighCard':
+      return `High Card: ${cardName(values[0])}`;
+    default:
+      return rank;
+  }
+};
 
 module.exports = { evaluateHand, determineWinner, determineWinner7, facemaker, calculateHandRange };

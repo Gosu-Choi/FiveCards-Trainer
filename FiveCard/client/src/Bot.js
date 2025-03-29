@@ -118,11 +118,11 @@ const aiDecisionHoldem = async (indicator, survivor, hands, money, pot, is_final
   
   // Community Cards
   if (community.length > 0) {
-    mention += `\n\n### Community Cards:`;
+    mention += `\n\n### Community Cards: ${convertCardList(community)}`;
     if (community.length !== 5){
-      mention += `\n- The board is: ${convertCardList(community)}. For now, you are having **${JSON.stringify(calculateHandRange(hands[indicator], community, [], false).maxRank)}**. And your potential hand range based on current hole cards and possible future community cards is: ${JSON.stringify(calculateHandRange(hands[indicator], community).possibleRanks)}, of course the probability is varying.`;
+      mention += `\nSo for now, with your hole cards, You are having **${JSON.stringify(calculateHandRange(hands[indicator], community, [], false).maxRank)}**. And your potential hand range based on current hole cards and possible future community cards is: ${JSON.stringify(calculateHandRange(hands[indicator], community).possibleRanks)}, of course the probability is varying.`
     } else {
-      mention += `\n- The board is: ${convertCardList(community)}, so your hand is ${JSON.stringify(calculateHandRange(hands[indicator], community).possibleRanks)}.`;
+      mention += `\nSo for now, with your hole cards, your hand is ${JSON.stringify(calculateHandRange(hands[indicator], community, [], false).maxRank)}.`;
     }
     // mention += `\n- Possible hands other players might have based on the board: [Analyze their potential hands].`;
   } else {
@@ -278,11 +278,11 @@ const DecisionFBHoldem = async (indicator, survivor, hands, money, pot, is_final
 
   // Community Cards
   if (community.length > 0) {
-    mention += `\n\n### Community Cards:`;
+    mention += `\n\n### Community Cards: ${convertCardList(community)}`;
     if (community.length !== 5){
-      mention += `\n- The board is: ${convertCardList(community)}. For now, I am having **${JSON.stringify(calculateHandRange(hands[indicator], community, [], false).maxRank)}**. So my potential hand range based on current hole cards and possible future community cards is: ${JSON.stringify(calculateHandRange(hands[indicator], community).possibleRanks)}, of course the probability is varying.`;
+      mention += `\nSo for now, with my hole cards, I am having **${JSON.stringify(calculateHandRange(hands[indicator], community, [], false).maxRank)}**. And my potential hand range based on current hole cards and possible future community cards is: ${JSON.stringify(calculateHandRange(hands[indicator], community).possibleRanks)}, of course the probability is varying.`
     } else {
-      mention += `\n- The board is: ${convertCardList(community)}, so my hand is ${JSON.stringify(calculateHandRange(hands[indicator], community).possibleRanks)}.`;
+      mention += `\nSo for now, with my hole cards, my hand is ${JSON.stringify(calculateHandRange(hands[indicator], community, [], false).maxRank)}.`;
     }
   } else {
     mention += `\n- This is pre-flop, so community cards are not revealed yet.`;
