@@ -124,7 +124,6 @@ const aiDecisionHoldem = async (indicator, survivor, hands, money, pot, is_final
     } else {
       mention += `\n- The board is: ${convertCardList(community)}, so your hand is ${JSON.stringify(calculateHandRange(hands[indicator], community).possibleRanks)}.`;
     }
-    mention += `\n- And you can guess about other opponents' hole cards with following information.`
     // mention += `\n- Possible hands other players might have based on the board: [Analyze their potential hands].`;
   } else {
     mention += `\n- This is pre-flop, so community cards are not revealed yet.`;
@@ -148,7 +147,7 @@ const aiDecisionHoldem = async (indicator, survivor, hands, money, pot, is_final
     }
   }
   if (community.length > 0) {
-    mention += `\n### Opponent's current possible hand range exactly for now, based on the known board (excluding my cards) is: ${JSON.stringify(calculateHandRange([], community, hands[indicator]).possibleRanks)}`
+    mention += `\n### Opponent's current, immediate hand range, so opponent may have for now based on the known board (excluding my cards) is: ${JSON.stringify(calculateHandRange([], community, hands[indicator]).possibleRanks)}`
     console.log(mention)
   }
   mention += `\n\n### Decision Making:`;
@@ -158,10 +157,6 @@ const aiDecisionHoldem = async (indicator, survivor, hands, money, pot, is_final
   mention += `\n- Based on your plan and strategy, should you call, fold, or raise?`;
   mention += `\n- If you raise, what is your additional bet size?`;
   mention += `\n- If you call, what are the possible future scenarios?`;
-  
-  if (is_final) {
-    mention += `\n\nThis is the final phase of betting. No more cards will be dealt. Recognize that if a flush or straight is possible using only the community cards, other players may also have it.`;
-  }
 
   if (raised - turnmoneymanage[indicator] === 0){
     mention += `Which of one do you want to do? Check or bet? Call for simple answer.`
@@ -285,11 +280,10 @@ const DecisionFBHoldem = async (indicator, survivor, hands, money, pot, is_final
   if (community.length > 0) {
     mention += `\n\n### Community Cards:`;
     if (community.length !== 5){
-      mention += `\n- The board is: ${convertCardList(community)}. For now, I am having **${JSON.stringify(calculateHandRange(hands[indicator], community, [], false).maxRank)}**. And my potential hand range based on current hole cards and possible future community cards is: ${JSON.stringify(calculateHandRange(hands[indicator], community).possibleRanks)}, of course the probability is varying.`;
+      mention += `\n- The board is: ${convertCardList(community)}. For now, I am having **${JSON.stringify(calculateHandRange(hands[indicator], community, [], false).maxRank)}**. So my potential hand range based on current hole cards and possible future community cards is: ${JSON.stringify(calculateHandRange(hands[indicator], community).possibleRanks)}, of course the probability is varying.`;
     } else {
       mention += `\n- The board is: ${convertCardList(community)}, so my hand is ${JSON.stringify(calculateHandRange(hands[indicator], community).possibleRanks)}.`;
     }
-    mention += `\n- You should assess my hand strength and evaluate possible opponent hands based on this board.`;
   } else {
     mention += `\n- This is pre-flop, so community cards are not revealed yet.`;
   }
@@ -313,7 +307,7 @@ const DecisionFBHoldem = async (indicator, survivor, hands, money, pot, is_final
     }
   }
   if (community.length > 0) {
-    mention += `\n### Opponent's current possible hand range exactly for now, based on the known board (excluding my cards) is: ${JSON.stringify(calculateHandRange([], community, hands[indicator]).possibleRanks)}`
+    mention += `\n### Opponent's current, immediate hand range, so opponent may have for now based on the known board (excluding my cards) is: ${JSON.stringify(calculateHandRange([], community, hands[indicator]).possibleRanks)}`
   }
   if (raised - turnmoneymanage[indicator] === 0 && JSON.stringify(choice[0][choice[0].length - 1]) === JSON.stringify("call")){
     mention += `\nI did check for now.`
@@ -339,10 +333,6 @@ const DecisionFBHoldem = async (indicator, survivor, hands, money, pot, is_final
   mention += `\n- What is the probability that an opponent has a better hand than mine? Provide reasoning using probability and logical deduction.`;
   mention += `\n- If you were to raise, what would be the optimal bet size based on GTO or exploitative strategy?`;
   mention += `\n- If you call, what are the possible future outcomes?`;
-
-  if (is_final) {
-    mention += `\n\nThis is the final phase of betting. No more cards will be dealt. Consider the possibility that community cards alone might form a strong hand that multiple players can share.`;
-  }
 
   mention += `\n\n**Now, provide your response:**`;
   mention += `\n- Reply only with 'Fold.', 'Call.', or 'Raise.' first. (If raising, specify amount).`;
