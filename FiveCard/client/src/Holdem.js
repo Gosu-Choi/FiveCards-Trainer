@@ -214,10 +214,10 @@ function Holdem() {
     gamestartedRef.current = gamestarted;
     if (gamestartedRef.current) {
       const gameLoop = async () => {
-        console.log("1")
         while (moneys[SB_indicatorRef.current] < SmallBlind){
           SB_indicatorRef.current = (SB_indicatorRef.current + 1) % playerCount;
         }
+        console.log("SB is:", SB_indicatorRef.current)
         indicatorRef.current = SB_indicatorRef.current;
         setBetting_round(1);
         betting_roundRef.current = 1;
@@ -376,7 +376,7 @@ function Holdem() {
       setRaised(SmallBlind);
       raisedRef.current = SmallBlind
       await call(indicatorRef.current, true); // SB
-      await raise(indicatorRef.current, 2*SmallBlind); // BB
+      await raise(indicatorRef.current, SmallBlind); // BB
     }
     setTurn(true);
     setTurnmoneymanage(new Array(playerCount).fill(0));
