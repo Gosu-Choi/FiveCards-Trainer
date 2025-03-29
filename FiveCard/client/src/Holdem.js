@@ -223,8 +223,6 @@ function Holdem() {
         await change_indicator_betting(SB_indicatorRef.current);
         await setPlayershouldbetfunc();
         await handleBettingRound(false);
-        await call(indicatorRef.current, true); // SB
-        await raise(indicatorRef.current, 2*SmallBlind); // BB
         setBetting_round(prevBetting_Round => prevBetting_Round + 1);
         betting_roundRef.current = betting_roundRef.current + 1;
         // Flop
@@ -373,6 +371,8 @@ function Holdem() {
     } else {
       setRaised(SmallBlind);
       raisedRef.current = SmallBlind
+      await call(indicatorRef.current, true); // SB
+      await raise(indicatorRef.current, 2*SmallBlind); // BB
     }
     setTurn(true);
     setTurnmoneymanage(new Array(playerCount).fill(0));
