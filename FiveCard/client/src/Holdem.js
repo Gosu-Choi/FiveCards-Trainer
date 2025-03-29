@@ -363,7 +363,7 @@ function Holdem() {
       if (indicatorRef.current === 0){
         await waitForPlayerDecision();
         const dec = await DecisionFBHoldem(0, activePlayersRef.current, handsRef.current, moneysRef.current, potRef.current, (communityRef.current[0].length === 5), playerchoiceRef.current, raisedRef.current, communityRef.current[0], playerchoiceRef.current, language, turnmoneymanageRef.current);
-        console.log(dec)
+        console.log(JSON.stringify(dec))
         const advice = `You should have done ${dec.decision.action}${dec.decision.amount === 0 ? '' : ` ${dec.decision.amount}`}. ${dec.decision.explanation}`
         setMents(prevMents => {
           const newMents = [...prevMents]
@@ -379,7 +379,7 @@ function Holdem() {
         })
       } else {
         const dec = await aiDecisionHoldem(indicatorRef.current, activePlayersRef.current, handsRef.current, moneysRef.current, potRef.current, (communityRef.current[0].length === 5), raisedRef.current, communityRef.current[0], playerchoiceRef.current, language, pokerstyle[indicatorRef.current-1], turnmoneymanageRef.current);
-        console.log(dec)
+        console.log(JSON.stringify(dec))
         setMents(prevMents => {
           const newMents = [...prevMents]
           newMents[indicatorRef.current] = dec.mention;

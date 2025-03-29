@@ -94,7 +94,6 @@ const aifeedbackforOM = async(history, model, playerCount, language, style) => {
   }
   mention = mention.concat(" How do you feedback for my opponent modeling? Please give me your idea for my opponent modeling in ").concat(language).concat(", without any special mark, particularly '*' and if I did not make any opponent modeling for one, then don't give me any hint or allusion for that. Additionally, DON'T directly mention that this player is systematically modeled as something. And you should briefly answer with the reasons because if you make a long answer then your answer will not be transmitted. I reemphasize that the reason of your idea is very important in spite of that you should give me briefly.");
   const feedback = await handleSendMessage(mention);
-  console.log(mention);
   return new Promise((resolve) => {
     setTimeout(() => { 
       resolve({ feedback, mention });
@@ -148,7 +147,6 @@ const aiDecisionHoldem = async (indicator, survivor, hands, money, pot, is_final
   }
   if (community.length > 0) {
     mention += `\n### Opponent's current, immediate hand range, so opponent may have for now based on the known board (excluding my cards) is: ${JSON.stringify(calculateHandRange([], community, hands[indicator]).possibleRanks)}`
-    console.log(mention)
   }
   mention += `\n\n### Decision Making:`;
   mention += `\n- You should pretend to be a ${style} holdem player. (Avoid mentioning about it in your answer.)`;
@@ -226,7 +224,12 @@ const aiDecisionHoldem = async (indicator, survivor, hands, money, pot, is_final
   
   const decision_notjson = await handleSendMessage(mention, schema);
   const decision = JSON.parse(decision_notjson)
-  console.log(mention)
+  if(decision.amount === 0 && JSON.stringify(decision.action) === JSON.stringify("Raise")){
+    decision.action = "Call";
+  }
+  if(decision.amount > 0){
+    decision.action = "Raise";
+  }
   return new Promise((resolve) => {
     setTimeout(() => {
       resolve({ decision, mention });
@@ -360,9 +363,14 @@ const DecisionFBHoldem = async (indicator, survivor, hands, money, pot, is_final
     "required": ["action", "amount", "explanation"],
     "additionalProperties": false
   };
-  console.log(mention)
   const decision_notjson = await handleSendMessage(mention, schema);
   const decision = JSON.parse(decision_notjson)
+  if(decision.amount === 0 && JSON.stringify(decision.action) === JSON.stringify("Raise")){
+    decision.action = "Call";
+  }
+  if(decision.amount > 0){
+    decision.action = "Raise";
+  }
   return new Promise((resolve) => {
     setTimeout(() => {
       resolve({ decision, mention });
