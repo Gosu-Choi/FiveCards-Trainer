@@ -29,7 +29,7 @@ function Holdem() {
   const [raised, setRaised] = useState(null);
   const [indicator, setIndicator] = useState(null);
   const [moneys, setMoneys] = useState([]);
-  const default_ante = 100;
+  const SmallBlind = 100;
   const [is_first_operation, setIs_first_operation] = useState(true);
   const [is_beginning, setIs_beginning] = useState(false);
   const [gamestarted, setGamestarted] = useState(false);
@@ -50,9 +50,11 @@ function Holdem() {
   const { historization, historyexport, historyRef } = useHistory();
   const [pokerstyle, setPokerstyle] = useState([]);
   const [raiseAmount, setRaiseAmount] = useState("");
+  const [SB_indicator, setDealer_indicator] = useState(0);
 
   const { useremail, login, logout, isAuthenticated, playerMoney, refreshmoney } = useAuth();
   const playerchoiceRef = useRef(playerchoice);
+  const SB_indicatorRef = useRef(SB_indicator);
   const cardsDrawnRef = useRef(cardsDrawn);
   const showFifthCardRef = useRef(showFifthCard);
   const handsRef = useRef(hands);
@@ -78,6 +80,10 @@ function Holdem() {
   useEffect(() => {
     opponentmodelsRef.current = opponentmodels
   }, [opponentmodels])
+
+  useEffect(() => {
+    SB_indicatorRef.current = SB_indicator
+  }, [SB_indicator])
 
   useEffect(() => {
     mentsRef.current = ments;
@@ -186,13 +192,17 @@ function Holdem() {
     if (!is_first_operation){
       if (is_beginning) {
         const beginning_func = async() => {
-          while (playershouldbetRef.current.some(person => person === true)){
-            if (moneys[indicatorRef.current] < default_ante){
-              await fold(indicatorRef.current);
-            } else {
-              await call(indicatorRef.current, true);
-            }
+          while (moneys[SB_indicatorRef.current] < SmallBlind){
+            SB_indicatorRef.current = (SB_indicatorRef.current + 1) % playerCount;
           }
+          indicatorRef.current = SB_indicatorRef.current;
+          // while (playershouldbetRef.current.some(person => person === true)){
+          //   if (moneys[indicatorRef.current] < SmallBlind){
+          //     await fold(indicatorRef.current);
+          //   } else {
+          //     await call(indicatorRef.current, true);
+          //   }
+          // }
           await drawCards();
           await drawCards();
           setIs_beginning(false);
@@ -210,9 +220,11 @@ function Holdem() {
         setBetting_round(1);
         betting_roundRef.current = 1;
         // Pre-flop
-        await change_indicator_betting();
+        await change_indicator_betting(SB_indicatorRef.current);
         await setPlayershouldbetfunc();
-        await handleBettingRound();
+        await handleBettingRound(false);
+        await call(indicatorRef.current, true); // SB
+        await raise(indicatorRef.current, 2*SmallBlind); // BB
         setBetting_round(prevBetting_Round => prevBetting_Round + 1);
         betting_roundRef.current = betting_roundRef.current + 1;
         // Flop
@@ -220,7 +232,7 @@ function Holdem() {
           await drawCommunity();
           await drawCommunity();
           await drawCommunity();
-          await change_indicator_betting();
+          await change_indicator_betting(SB_indicatorRef.current);
           await setPlayershouldbetfunc();
           await handleBettingRound();
           setBetting_round(prevBetting_Round => prevBetting_Round + 1);
@@ -229,7 +241,7 @@ function Holdem() {
         // Until River
         while (activePlayersRef.current.filter(person => person === true).length > 1 && betting_roundRef.current < 5) {
           await drawCommunity();
-          await change_indicator_betting();
+          await change_indicator_betting(SB_indicatorRef.current);
           await setPlayershouldbetfunc();
           await handleBettingRound();
           setBetting_round(prevBetting_Round => prevBetting_Round + 1);
@@ -354,9 +366,11 @@ function Holdem() {
     });
   };
 
-  const handleBettingRound = async () => {
-    setRaised(0);
-    raisedRef.current = 0
+  const handleBettingRound = async (sign=true) => {
+    if(sign){
+      setRaised(0);
+      raisedRef.current = 0
+    }
     setTurn(true);
     setTurnmoneymanage(new Array(playerCount).fill(0));
     while (playershouldbetRef.current.some(person => person === true) && activePlayersRef.current.filter(person => person === true).length > 1){
@@ -437,8 +451,8 @@ function Holdem() {
     potRef.current = 0
     setIs_first_operation(false);
     await change_indicator(0);
-    setRaised(default_ante);
-    raisedRef.current = default_ante
+    setRaised(SmallBlind);
+    raisedRef.current = SmallBlind
   };
 
   const fold = async (playerIndex) => {
@@ -544,11 +558,11 @@ function Holdem() {
     indicatorRef.current = ch;
   });
 
-  const change_indicator_betting = async() => {
-    for (let i = 0; i<playerCount; i++){
-      if(activePlayersRef.current[i]){
-        setIndicator(i);
-        indicatorRef.current = i;
+  const change_indicator_betting = async(k) => {
+    for (let i = k; i<playerCount; i++){
+      if(activePlayersRef.current[i%playerCount]){
+        setIndicator(i%playerCount);
+        indicatorRef.current = i%playerCount;
         break;
       }
     }
