@@ -102,10 +102,16 @@ const evaluateHand = (hand, is_face) => {
   }, {});
 
   const isFlush = (suits.every(suit => suit === suits[0]) && suits.length === 5);
-  const isStraight = (values.every((card, index) => {
-    if (index === 0) return true;
-    return card === values[index - 1] - 1;
-  }) && values.length === 5);
+  const isStraight = (() => {
+    if (values.length !== 5) return false;
+    const sorted = [...new Set(values)].sort((a, b) => b - a);
+    let normal = sorted.every((card, index, arr) => {
+      if (index === 0) return true;
+      return card === arr[index - 1] - 1;
+    });
+    let wheel = JSON.stringify(sorted) === JSON.stringify([14, 5, 4, 3, 2]);
+    return normal || wheel;
+  })();
 
   const counts = Object.values(valueCounts).sort((a, b) => b - a);
   const uniqueValues = Object.keys(valueCounts).sort((a, b) => valueCounts[b] - valueCounts[a] || b - a).map(Number);
