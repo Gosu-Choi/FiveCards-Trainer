@@ -50,7 +50,7 @@ function Holdem() {
   const { historization, historyexport, historyRef } = useHistory();
   const [pokerstyle, setPokerstyle] = useState([]);
   const [raiseAmount, setRaiseAmount] = useState("");
-  const [SB_indicator, setDealer_indicator] = useState(0);
+  const [SB_indicator, setSB_indicator] = useState(0);
 
   const { useremail, login, logout, isAuthenticated, playerMoney, refreshmoney } = useAuth();
   const playerchoiceRef = useRef(playerchoice);
@@ -214,9 +214,9 @@ function Holdem() {
     gamestartedRef.current = gamestarted;
     if (gamestartedRef.current) {
       const gameLoop = async () => {
-        while (moneys[SB_indicatorRef.current] < SmallBlind){
+        do {
           SB_indicatorRef.current = (SB_indicatorRef.current + 1) % playerCount;
-        }
+        } while (moneys[SB_indicatorRef.current] < SmallBlind);
         console.log("SB is:", SB_indicatorRef.current)
         indicatorRef.current = SB_indicatorRef.current;
         setBetting_round(1);
