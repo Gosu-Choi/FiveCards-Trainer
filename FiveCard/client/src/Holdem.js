@@ -369,6 +369,8 @@ function Holdem() {
   };
 
   const handleBettingRound = async (sign=true) => {
+    setTurn(true);
+    setTurnmoneymanage(new Array(playerCount).fill(0));
     if(sign){
       setRaised(0);
       raisedRef.current = 0
@@ -378,8 +380,6 @@ function Holdem() {
       await call(indicatorRef.current, true); // SB
       await raise(indicatorRef.current, SmallBlind); // BB
     }
-    setTurn(true);
-    setTurnmoneymanage(new Array(playerCount).fill(0));
     while (playershouldbetRef.current.some(person => person === true) && activePlayersRef.current.filter(person => person === true).length > 1){
       if (indicatorRef.current === 0){
         await waitForPlayerDecision();
