@@ -129,7 +129,7 @@ const aiDecisionHoldem = async (indicator, survivor, hands, money, pot, is_final
   }
   // Betting Information
   mention += `\n\n### Betting Information:`;
-  mention += `\n- Your current stack: ${money[indicator]}, and big blind is 100.`;
+  mention += `\n- Your current stack: ${money[indicator]}, and big blind is 1000.`;
   mention += `\n- Pot size: ${pot}`;
   mention += `\n- Amount to call: ${raised - turnmoneymanage[indicator]}.`; // raised - turnmoneymanage[indicator] === 0 ? "nothing (free call)" : 
   
@@ -293,7 +293,7 @@ const DecisionFBHoldem = async (indicator, survivor, hands, money, pot, is_final
 
   // Betting Information
   mention += `\n\n### Betting Information:`;
-  mention += `\n- My current stack: ${money[indicator]}, and big blind is 100.`;
+  mention += `\n- My current stack: ${money[indicator]}, and big blind is 1000.`;
   mention += `\n- Pot size: ${pot}.`;
   mention += `\n- Amount to call: ${raised - turnmoneymanage[indicator] === 0 ? "nothing (free call)" : raised - turnmoneymanage[indicator]}.`;
 

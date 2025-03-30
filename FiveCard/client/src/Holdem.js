@@ -29,7 +29,7 @@ function Holdem() {
   const [raised, setRaised] = useState(null);
   const [indicator, setIndicator] = useState(null);
   const [moneys, setMoneys] = useState([]);
-  const SmallBlind = 100;
+  const SmallBlind = 500;
   const [is_first_operation, setIs_first_operation] = useState(true);
   const [is_beginning, setIs_beginning] = useState(false);
   const [gamestarted, setGamestarted] = useState(false);
