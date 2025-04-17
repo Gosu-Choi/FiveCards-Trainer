@@ -41,6 +41,7 @@ const ChatBot = ({ closeModal, chatContext, modalIndex, ments, language }) => { 
       setVisualmessages((prevVisualMessages) => [...prevVisualMessages, { content: help, role: "assistant" }]);
       console.log("chatContext:", chatContext)
       console.log("ments:", ments)
+      console.log("messages:", [...messages, { content: userInput.concat(" Please give me your answer for essential 3-4 sentences in .").concat(language), role: "user" }])
     }
   };
 
