@@ -24,14 +24,15 @@ const ChatMessage = ({ message, role }) => (
 
 const ChatBot = ({ closeModal, chatContext, modalIndex, ments, language }) => { // ments should be used.
 
-  const [messages, setMessages] = useState([{ content: chatContext, role: "assistant" }]);
+  const [messages, setMessages] = useState([{ content: ments[modalIndex], role: "user" }, { content: chatContext, role: "assistant" }]);
   const [visualmessages, setVisualmessages] = useState([{ content: chatContext, role: "assistant" }]);
   const [userInput, setUserInput] = useState('');
 
   const handleManageMessage = async () => {
     if (userInput.trim()) {
       const newMessages = [...messages, { content: userInput, role: "user" }];
-      setVisualmessages(newMessages);
+      const newvisualMessages = [...visualmessages, { content: userInput, role: "user" }];
+      setVisualmessages(newvisualMessages);
       setMessages(newMessages);
       setUserInput('');
   
@@ -41,7 +42,7 @@ const ChatBot = ({ closeModal, chatContext, modalIndex, ments, language }) => { 
       setVisualmessages((prevVisualMessages) => [...prevVisualMessages, { content: help, role: "assistant" }]);
       console.log("chatContext:", chatContext)
       console.log("ments:", ments)
-      console.log("messages:", [...messages, { content: userInput.concat(" Please give me your answer for essential 3-4 sentences in .").concat(language), role: "user" }])
+      console.log("messages:", [...messages, { content: `"${userInput}" This is player 0's question. Please give me your answer for essential 3-4 sentences in `.concat(language), role: "user" }])
     }
   };
 
