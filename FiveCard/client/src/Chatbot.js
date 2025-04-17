@@ -23,6 +23,7 @@ const ChatMessage = ({ message, role }) => (
   );
 
 const ChatBot = ({ closeModal, chatContext, modalIndex, ments, language }) => { // ments should be used.
+
   const [messages, setMessages] = useState([{ content: chatContext, role: "assistant" }]);
   const [visualmessages, setVisualmessages] = useState([{ content: chatContext, role: "assistant" }]);
   const [userInput, setUserInput] = useState('');
@@ -38,6 +39,8 @@ const ChatBot = ({ closeModal, chatContext, modalIndex, ments, language }) => { 
   
       setMessages((prevMessages) => [...prevMessages, { content: help, role: "assistant" }]);
       setVisualmessages((prevVisualMessages) => [...prevVisualMessages, { content: help, role: "assistant" }]);
+      console.log("chatContext:", chatContext)
+      console.log("ments:", ments)
     }
   };
 
