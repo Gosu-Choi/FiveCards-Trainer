@@ -42,7 +42,7 @@ const ChatBot = ({ closeModal, chatContext, modalIndex, ments, language }) => { 
       setVisualmessages((prevVisualMessages) => [...prevVisualMessages, { content: help, role: "assistant" }]);
       console.log("chatContext:", chatContext)
       console.log("ments:", ments)
-      console.log("messages:", [...messages, { content: `"${userInput}" This is player 0's question. Please give me your answer for essential 3-4 sentences in `.concat(language), role: "user" }])
+      console.log("messages:", [...messages, { content: `"${userInput}" This is player 0's question. Please give me your rationale of previous decision with essential 3-4 sentences in `.concat(language), role: "user" }])
     }
   };
 
