@@ -24,7 +24,9 @@ const ChatMessage = ({ message, role }) => (
 
 const ChatBot = ({ closeModal, chatContext, modalIndex, ments, language }) => { // ments should be used.
 
-  const [messages, setMessages] = useState([{ content: ments[modalIndex], role: "user" }, { content: chatContext, role: "assistant" }]);
+  const [messages, setMessages] = useState([{
+    content: "You are an AI poker assistant analyzing TEXAS HOLD'EM decisions. For each round, the user will give you a game situation and you must choose one action: 'Fold.', 'Call.', or 'Raise [amount].'. After making your decision, wait for a follow-up question. If the user asks for your reasoning, you should **not make a new decision**, but **only explain your previous action** using **3-4 Korean sentences** based on logic, probability, and poker theory (GTO or exploitative). Never revise your action unless explicitly told to do so.", role: "system"
+  }, { content: ments[modalIndex], role: "user" }, { content: chatContext, role: "assistant" }]);
   const [visualmessages, setVisualmessages] = useState([{ content: chatContext, role: "assistant" }]);
   const [userInput, setUserInput] = useState('');
 
